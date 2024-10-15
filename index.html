@@ -1,1 +1,538 @@
+<!DOCTYPE html>
+<html lang="en" >
+<head>
+  <meta charset="UTF-8">
+  <title>Travel Timeline in Hanoi</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <style>
+
+	* {
+		border: 0;
+		box-sizing: border-box;
+		margin: 0;
+		padding: 0;
+	}
+
+	:root {
+		--hue: 223;
+		--bg: hsl(var(--hue),10%,90%);
+		--fg: hsl(var(--hue),10%,10%);
+		--primary: hsl(var(--hue),90%,50%);
+		--trans-dur: 0.3s;
+		--trans-timing: cubic-bezier(0.65,0,0.35,1);
+		font-size: calc(16px + (24 - 16) * (100vw - 320px) / (2560 - 320));
+	}
+
+	a {
+		color: var(--primary);
+		transition: color var(--trans-dur);
+	}
+
+	body,
+	button {
+		color: var(--fg);
+		font: 1em/1.5 "IBM Plex Sans", sans-serif;
+	}
+
+	body {
+		background-color: var(--bg);
+		height: 100vh;
+		transition:
+			background-color var(--trans-dur),
+			color var(--trans-dur);
+	}
+
+	h1 {
+		font-size: 2em;
+		margin: 0 0 3rem;
+		padding-top: 1.5rem;
+		text-align: center;
+	}
+
+	.btn {
+		background-color: var(--fg);
+		border-radius: 0.25em;
+		color: var(--bg);
+		cursor: pointer;
+		padding: 0.375em 0.75em;
+		transition:
+			background-color calc(var(--trans-dur) / 2) linear,
+			color var(--trans-dur);
+		-webkit-tap-highlight-color: transparent;
+	}
+
+	.btn:hover {
+		background-color: hsl(var(--hue),10%,50%);
+	}
+
+	.btn-group {
+		display: flex;
+		gap: 0.375em;
+		margin-bottom: 1.5em;
+	}
+
+	.timeline {
+		margin: auto;
+		padding: 0 1.5em;
+		width: 100%;
+		max-width: 36em;
+	}
+
+	.timeline__arrow {
+		background-color: transparent;
+		border-radius: 0.25em;
+		cursor: pointer;
+		flex-shrink: 0;
+		margin-inline-end: 0.25em;
+		outline: transparent;
+		width: 2em;
+		height: 2em;
+		transition:
+			background-color calc(var(--trans-dur) / 2) linear,
+			color var(--trans-dur);
+		-webkit-appearance: none;
+		appearance: none;
+		-webkit-tap-highlight-color: transparent;
+	}
+
+	.timeline__arrow:focus-visible,
+	.timeline__arrow:hover {
+		background-color: hsl(var(--hue),10%,50%,0.4);
+	}
+
+	.timeline__arrow-icon {
+		display: block;
+		pointer-events: none;
+		transform: rotate(-90deg);
+		transition: transform var(--trans-dur) var(--trans-timing);
+		width: 100%;
+		height: auto;
+	}
+
+	.timeline__date {
+		font-size: 0.833em;
+		line-height: 2.4;
+	}
+
+	.timeline__dot {
+		background-color: currentColor;
+		border-radius: 50%;
+		display: inline-block;
+		flex-shrink: 0;
+		margin: 0.625em 0;
+		margin-inline-end: 1em;
+		position: relative;
+		width: 0.75em;
+		height: 0.75em;
+	}
+
+	.timeline__item {
+		position: relative;
+		padding-bottom: 2.25em;
+	}
+
+	.timeline__item:not(:last-child):before {
+		background-color: currentColor;
+		content: "";
+		display: block;
+		position: absolute;
+		top: 1em;
+		left: 2.625em;
+		width: 0.125em;
+		height: 100%;
+		transform: translateX(-50%);
+	}
+
+	[dir="rtl"] .timeline__arrow-icon {
+		transform: rotate(90deg);
+	}
+
+	[dir="rtl"] .timeline__item:not(:last-child):before {
+		right: 2.625em;
+		left: auto;
+		transform: translateX(50%);
+	}
+
+	.timeline__item-header {
+		display: flex;
+	}
+
+	.timeline__item-body {
+		border-radius: 0.375em;
+		overflow: hidden;
+		margin-top: 0.5em;
+		margin-inline-start: 4em;
+		height: 0;
+	}
+
+	.timeline__item-body-content {
+		background-color: hsl(var(--hue),10%,50%,0.2);
+		opacity: 0;
+		padding: 0.5em 0.75em;
+		visibility: hidden;
+		transition:
+			opacity var(--trans-dur) var(--trans-timing),
+			visibility var(--trans-dur) steps(1,end);
+	}
+	
+	.timeline__item-p-ul {
+		list-style: none;
+		padding: 1em 0;
+		font-size: .8em;
+	}
+	
+	.timeline__item-p-ul li {
+		margin-top: .5em;
+	}
+
+	.timeline__item-p-ul li p {
+		padding: 0.5em 1em;
+		font-style: italic;
+	}
+
+	.map-container {
+ 		position: relative;
+ 		width: 100%;
+		height: 100%;
+		padding-top: 75%; /* 比率を4:3に固定 */
+	}
+
+	.map-container iframe {
+		position: absolute;
+		border-radius: 0.375em;
+		top: .5em;
+		left: 0;
+		width: 100%;
+		height: 95%;
+	}
+	
+	.timeline__title {
+		font-size: 1.5em;
+		line-height: 1.333;
+	}
+
+	/* Expanded state */
+	.timeline__item-body--expanded {
+		height: auto;
+	}
+
+	.timeline__item-body--expanded .timeline__item-body-content {
+		opacity: 1;
+		visibility: visible;
+		transition-delay: var(--trans-dur), 0s;
+	}
+
+	.timeline__arrow[aria-expanded="true"] .timeline__arrow-icon {
+		transform: rotate(0);
+	}
+
+	footer {
+		font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+		font-size: 12px;
+		padding: 3%;
+	}
+/* Dark theme */
+@media (prefers-color-scheme: dark) {
+	:root {
+		--bg: hsl(var(--hue),10%,10%);
+		--fg: hsl(var(--hue),10%,90%);
+		--primary: hsl(var(--hue),90%,70%);
+	}
+	}
+  </style>
+
+</head>
+<body>
+	<!-- partial:index.partial.html -->
+	<svg display="none">
+		<symbol id="arrow">
+			<polyline points="7 10,12 15,17 10" fill="none" stroke="currentcolor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" />
+		</symbol>
+	</svg>
+	<h1>ハノイ旅行</h1>
+	<div id="timeline" class="timeline">
+		<div class="btn-group">
+			<button class="btn" type="button" data-action="expand">Expand All</button>
+			<button class="btn" type="button" data-action="collapse">Collapse All</button>
+		</div>
+
+		<!-- item 1 -->
+		<div class="timeline__item">
+			<div class="timeline__item-header">
+				<button class="timeline__arrow" type="button" id="item1" aria-labelledby="item1-name" aria-expanded="false" aria-controls="item1-ctrld" aria-haspopup="true" data-item="1">
+					<svg class="timeline__arrow-icon" viewBox="0 0 24 24" width="24px" height="24px">
+						<use href="#arrow" />
+					</svg>
+				</button>
+				<span class="timeline__dot"></span>
+				<span id="item1-name" class="timeline__meta">
+					<time class="timeline__date" datetime="2024-10-10">2024年11月2日（土）</time><br>
+					<strong class="timeline__title">Day 0： Hanoi着</strong>
+				</span>
+			</div>
+			<div class="timeline__item-body" id="item1-ctrld" role="region" aria-labelledby="item1" aria-hidden="true">
+				<div class="timeline__item-body-content">
+					<p class="timeline__item-p">
+						ハノイ到着
+						<ul class="timeline__item-p-ul">
+							<li>空港まで迎えに行きます。
+                			<br>入国管理局通って（込んでたら30分とか結構時間かかるかも）、預荷物受取レーンも出たらお出迎えの人いっぱいいるので、そのあたりで見つけるよ。
+                  			<br>ポケットWifiとか借りてくる？Line繋がればLineで、Line使えなくて見つからなければ外に出て「10番」の柱のとこで待ってて。
+							</li>
+              				<br>
+							<li>16:35　羽田発（VN385）</li>
+							<li>20:45　ハノイ着</li>
+              				<li>22:30　ホテル Check in</li>
+              				<li>　　　  <a href="https://banhmi25.net" target="_blank" rel="noopener">＠Signature by M Village Tho Nhuom</a></li>
+              				<li>　　　  84 P. Thợ Nhuộm, Trần Hưng Đạo, Hoàn Kiếm, Hà Nội</li>
+							<li>23:00　お腹空いてたらなんか軽く食べる。</li>
+						</ul>
+					</p>
+
+					<!-- Add items in content from here-->
+					
+					<!-- to here-->
+
+				</div>
+			</div>
+		</div>
+		<!-- item 1 -->
+
+		<!-- item 2 -->		
+		<div class="timeline__item">
+			<div class="timeline__item-header">
+				<button class="timeline__arrow" type="button" id="item2" aria-labelledby="item2-name" aria-expanded="false" aria-controls="item2-ctrld" aria-haspopup="true" data-item="2">
+					<svg class="timeline__arrow-icon" viewBox="0 0 24 24" width="24px" height="24px">
+						<use href="#arrow" />
+					</svg>
+				</button>
+				<span class="timeline__dot"></span>
+				<span id="item2-name" class="timeline__meta">
+					<time class="timeline__date" datetime="1973-10-17">2024年11月3日（日）</time><br>
+					<strong class="timeline__title">Day 1： ハノイ観光</strong>
+				</span>
+			</div>
+			<div class="timeline__item-body" id="item2-ctrld" role="region" aria-labelledby="item2" aria-hidden="true">
+				<div class="timeline__item-body-content">
+					<p class="timeline__item-p">
+            一日ハノイ観光
+						<ul class="timeline__item-p-ul">							
+							<li>ハノイ市内を観光して、いろいろ食べて、疲れたら休憩してって感じ。
+              <br>ハノイで行きたいとことか買いたいもの見たいものとかあれば教えて。
+							</li>
+              <br>
+							<li>08:00　ホテル出発</li>
+							<li>08:30　朝ごはん：バインミー25 <a href="https://banhmi25.net" target="_blank" rel="noopener">URL</a></li>
+							<li>09:00　ホーチミン廟とか周辺散策</li>
+							<li>10:00　文廟 <a href="https://worldheritage.blog/vietnam/temple-of-literature/" target="_blank" rel="noopener">URL</a></li>
+              				<li>11:00　ホアロー収容所 <a href="https://www.travel.co.jp/guide/article/14042/" target="_blank" rel="noopener">URL</a></li>
+              				<li>12:00　ランチ：フォー？ <a href="https://vietscout.jp/article/hanoi-pho/" target="_blank" rel="noopener">URL</a></li>
+              				<li>13:00　マッサージからのカフェ</li>
+              				<li>16:10　水上人形劇 <a href="https://www.travelwith.jp/area/asia/vietnam/hanoi/topics/post-11704/" target="_blank" rel="noopener">URL</a></li>
+							<li>17:30　晩ごはん：Pizza 4P's @Bao Khanh <a href="https://maps.app.goo.gl/6ss3NxTzJEuYUWdF7" target="_blank" rel="noopener">Google map</a></li>
+              				<li>19:00　ナイトマーケット <a href="https://live-in-vietnam.top/night-market/" target="_blank" rel="noopener">URL</a>・旧市街散策<li>
+						</ul>
+					</p>
+					
+					<!-- Add items in content from here-->
+				　<br>	
+        <div class="map-container">
+            			<iframe src="https://www.google.com/maps/d/embed?mid=1hqlkdPdSKItMeRx6scKALUBlDhJbC3g&ehbc=2E312F" width="640" height="480"></iframe>
+					</div>
+					<!-- to here-->                 
+
+				</div>
+			</div>
+		</div>
+		<!-- item 2 -->
+
+		<!-- item 3 -->
+		<div class="timeline__item">
+			<div class="timeline__item-header">
+				<button class="timeline__arrow" type="button" id="item3" aria-labelledby="item3-name" aria-expanded="false" aria-controls="item3-ctrld" aria-haspopup="true" data-item="3">
+					<svg class="timeline__arrow-icon" viewBox="0 0 24 24" width="24px" height="24px">
+						<use href="#arrow" />
+					</svg>
+				</button>
+				<span class="timeline__dot"></span>
+				<span id="item3-name" class="timeline__meta">
+					<time class="timeline__date" datetime="2001-09-09">2024年11月4日（月）</time><br>
+					<strong class="timeline__title">Day 2： プチ旅行</strong>
+				</span>
+			</div>
+			<div class="timeline__item-body" id="item3-ctrld" role="region" aria-labelledby="item3" aria-hidden="true">
+				<div class="timeline__item-body-content">
+					<p class="timeline__item-p">
+					近場に小旅行
+					<!-- Add items in content from here-->
+          <ul class="timeline__item-p-ul">
+            <li>朝ごはん食べたら、ハノイから２時間くらいのとこで観光。
+            <br>一応、帰り道にある焼き物の村も寄れるので興味あれば。</li>
+            <br>
+							<li>07:00　ホテル出発 </li>
+              				<li>07:30　朝ごはん（フォー？お粥？） </li>
+              				<li>　　　　移動（2時間くらい）</li>
+							<li>10:00　チャンアンクルーズ <a href="https://www.tnkjapan.com/blog/2023/12/29/chan-an-tour/" target="_blank" rel="noopener">URL</a></li>
+							<li>12:00　ランチ（チャンアンのローカルレストランか） <a href="https://maps.app.goo.gl/5rgbjZ2raZ3s3zCBA" target="_blank" rel="noopener">Google map</a></li>
+              				<li>13:00　周辺散策（なんかキングコングの舞台あるらしい） </li>
+              				<li>　　　　移動（2時間くらい）</li>
+							<li>16:00　バッチャン村 （食器とか興味ある？行きたい？） <a href="https://walking-vietnam.net/rensai/sightseeing/attention-again-with-the-opening-of-the-new-facility-have-fun-in-the-evolved-bat-trang-village/" target="_blank" rel="noopener">URL</a></li>
+              				<li>　　　　疲れてたら一回ホテルで休憩。バッチャンなしのマッサージでも。</li>
+            　				<li>18:00　晩ごはん　↓ 候補はこんな感じ。他で気になるのあれば教えて。</li>
+            　				<li>　　　　ハノイガーデン <a href="https://maps.app.goo.gl/MSPUgrMXs1q3sXqk8" target="_blank" rel="noopener">Google map</a></li>
+
+            				<li>　　　　Tam Vi（ベトナム家庭料理） <a href="https://maps.app.goo.gl/1R6W7foaUNqYoLWM7" target="_blank" rel="noopener">Google map</a></li>
+							<li>　　　　Mediterraneo（イタリアン） <a href="https://maps.app.goo.gl/y6ZEV3GiEYmLn54p7" target="_blank" rel="noopener">Google map</a></li>
+            　				<li>20:00　元気ならどっかの Bar とか </li>
+						</ul>
+					</p>
+          <br>
+					<div class="map-container">
+						<iframe src="https://www.google.com/maps/d/embed?mid=1Dbz_CWkttmXZLK6WME_EJDf2Jw0voQA&ehbc=2E312F" width="640" height="480"></iframe>
+					</div>
+					<!-- to here-->                 
+
+				</div>
+			</div>
+		</div>
+		<!-- item 3 -->
+
+		<!-- item 4 -->
+		<div class="timeline__item">
+			<div class="timeline__item-header">
+				<button class="timeline__arrow" type="button" id="item4" aria-labelledby="item4-name" aria-expanded="false" aria-controls="item4-ctrld" aria-haspopup="true" data-item="4">
+					<svg class="timeline__arrow-icon" viewBox="0 0 24 24" width="24px" height="24px">
+						<use href="#arrow" />
+					</svg>
+				</button>
+				<span class="timeline__dot"></span>
+				<span id="item4-name" class="timeline__meta">
+					<time class="timeline__date" datetime="2009-02-13">2024年11月5日（火）</time><br>
+					<strong class="timeline__title">Day 3： 最終日</strong>
+				</span>
+			</div>
+			<div class="timeline__item-body" id="item4-ctrld" role="region" aria-labelledby="item4" aria-hidden="true">
+				<div class="timeline__item-body-content">
+					<p class="timeline__item-p"></p>
+					
+					<!-- Add items in content from here-->
+          <p>
+          <ul class="timeline__item-p-ul">							
+							<li>08:00　朝ごはん：たまに行くアメリカンな朝ごはんとか？ <a href="https://maps.app.goo.gl/ZpWGjz3jdJaEADQv9" target="_blank" rel="noopener">Google map</a></li>
+              				<li>09:00　お土産（スーパー）<a href="https://maps.app.goo.gl/f9Ket8wEQ5mMWzpf8" target="_blank" rel="noopener">Google map</a></li>
+            				<li>11:00　ホテル check out？</li>
+              				<li>16:00　スパ</li>
+              				<li>18:00　晩ごはん：ビュッフェ</li>
+							<li>21:30　ノイバイ空港着</li>
+              				<li>00:25　ハノイ発（VN310）</li>
+							<li>11月6日　07:00　成田着</li>
+						</ul>
+					</p>
+
+					<div class="map-container">
+            			<iframe src="https://www.google.com/maps/d/embed?mid=1hqlkdPdSKItMeRx6scKALUBlDhJbC3g&ehbc=2E312F" width="640" height="480"></iframe>
+					</div>
+					<!-- to here--> 
+				</div>
+			</div>
+		</div>
+		<!-- item 4 -->
+
+
+
+		<!--Added Item and Change "item * "-->
+		
+	</div>
+</body>
+<footer>
+
+</footer>
+<!-- partial -->
+	<script>
+		window.addEventListener("DOMContentLoaded",() => {
+		const ctl = new CollapsibleTimeline("#timeline");
+	});
+
+	class CollapsibleTimeline {
+		constructor(el) {
+			this.el = document.querySelector(el);
+
+			this.init();
+		}
+		init() {
+			this.el?.addEventListener("click",this.itemAction.bind(this));
+		}
+		animateItemAction(button,ctrld,contentHeight,shouldCollapse) {
+			const expandedClass = "timeline__item-body--expanded";
+			const animOptions = {
+				duration: 300,
+				easing: "cubic-bezier(0.65,0,0.35,1)"
+			};
+
+			if (shouldCollapse) {
+				button.ariaExpanded = "false";
+				ctrld.ariaHidden = "true";
+				ctrld.classList.remove(expandedClass);
+				animOptions.duration *= 2;
+				this.animation = ctrld.animate([
+					{ height: `${contentHeight}px` },
+					{ height: `${contentHeight}px` },
+					{ height: "0px" }
+				],animOptions);
+			} else {
+				button.ariaExpanded = "true";
+				ctrld.ariaHidden = "false";
+				ctrld.classList.add(expandedClass);
+				this.animation = ctrld.animate([
+					{ height: "0px" },
+					{ height: `${contentHeight}px` }
+				],animOptions);
+			}
+		}
+		itemAction(e) {
+			const { target } = e;
+			const action = target?.getAttribute("data-action");
+			const item = target?.getAttribute("data-item");
+
+			if (action) {
+				const targetExpanded = action === "expand" ? "false" : "true";
+				const buttons = Array.from(this.el?.querySelectorAll(`[aria-expanded="${targetExpanded}"]`));
+				const wasExpanded = action === "collapse";
+
+				for (let button of buttons) {
+					const buttonID = button.getAttribute("data-item");
+					const ctrld = this.el?.querySelector(`#item${buttonID}-ctrld`);
+					const contentHeight = ctrld.firstElementChild?.offsetHeight;
+
+					this.animateItemAction(button,ctrld,contentHeight,wasExpanded);
+				}
+
+			} else if (item) {
+				const button = this.el?.querySelector(`[data-item="${item}"]`);
+				const expanded = button?.getAttribute("aria-expanded");
+
+				if (!expanded) return;
+
+				const wasExpanded = expanded === "true";
+				const ctrld = this.el?.querySelector(`#item${item}-ctrld`);
+				const contentHeight = ctrld.firstElementChild?.offsetHeight;
+
+				this.animateItemAction(button,ctrld,contentHeight,wasExpanded);
+			}
+		}
+	}
+		function handleOrientationChange() {
+			if (window.matchmedia("(orientation: portait)").matches) {
+				document.body.style.width = "100%";
+			} else if (window.matchmedia("(orientation: landscape)").matches) {
+				document.body.style.width = "100vw";
+			}
+		}
+
+		window.addEventListener("orientationchange", handleOrientationChange);
+		window.addEventListener("resize", handleOrientationChange);
+		handleOrientationChange();
+	</script>
+
+</html>
 
