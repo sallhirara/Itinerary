@@ -28,6 +28,23 @@
             color: #fff;
         }
 
+        .control-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin: 20px 0;
+        }
+
+        .control-buttons button {
+            border: 1px solid transparent;
+            border-radius: 5px;
+            background-color: transparent;
+            color: var(--primary-color);
+            padding: 0.5em;
+            cursor: pointer;
+            font-size: var(--font-size-base);
+        }
+
         .timeline {
             margin: 20px 20px;
             max-width: 800px;
@@ -121,7 +138,15 @@
     </style>
 </head>
 <body>
-    <h1>Excel to Timeline</h1>
+    <h1>ITINERARY</h1>
+    <div class="control-buttons">
+        <button id="toggle-all-events" onclick="toggleAllEvents()"><i class="fa fa-angle-double-down"></i></button>
+        <button id="save-button" onclick="saveEvents()"><i class="fa fa-save"></i></button>
+        <button id="share-button" onclick="shareEvents()"><i class="fa fa-share-alt"></i></button>
+        <button id="toggle-edit" onclick="toggleEditMode()"><i class="fa fa-eye"></i></button>
+        <button id="reset-button" onclick="resetEvents()"><i class="fa fa-undo"></i></button>            
+        <button id="toggle-theme" onclick="toggleTheme()"><i class="fa fa-adjust"></i></button>
+    </div>
     <input type="file" id="fileInput" accept=".xlsx, .xls" />
     <div class="timeline" id="timeline"></div>
 
