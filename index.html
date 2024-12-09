@@ -28,14 +28,14 @@
             color: #fff;
         }
 
-        .control-buttons {
+        .menu-buttons {
             display: flex;
             justify-content: center;
             gap: 10px;
             margin: 20px 0;
         }
 
-        .control-buttons button {
+        .menu-buttons button {
             border: 1px solid transparent;
             border-radius: 5px;
             background-color: transparent;
@@ -139,8 +139,8 @@
 </head>
 <body>
     <h1>ITINERARY</h1>
-    <div class="control-buttons">
-        <button id="toggle-all-events" onclick="toggleAllEvents()"><i class="fa fa-angle-double-down"></i></button>
+    <div class="menu-buttons">
+        <button id="fileUpload" onclick="toggleAllEvents()"><i class="fa-solid fa-file-arrow-down"></i></button>
         <button id="save-button" onclick="saveEvents()"><i class="fa fa-save"></i></button>
         <button id="share-button" onclick="shareEvents()"><i class="fa fa-share-alt"></i></button>
         <button id="toggle-edit" onclick="toggleEditMode()"><i class="fa fa-eye"></i></button>
