@@ -2,13 +2,20 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     <title>Excel to Timeline</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
     <style>
+        * {
+            border: 0;
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
         body {
-            font-family: Arial, sans-serif;
+            font: 1em/1.5 'Arial, Helvetica, sans-serif';
             background-color: #f4f4f9;
             margin: 0;
             padding: 0;
@@ -214,7 +221,7 @@
 
                         const div = document.createElement('div');
                         div.innerHTML = `
-                            <h3>${timeFormatted} - ${item['Title']}</h3>
+                            <p>${timeFormatted} - ${item['Title']}</p>
                             <p>${item['Details']}</p>
                             ${item['Link'] ? `<a href="${item['Link']}" target="_blank">Link</a>` : ''}
                             <p><strong>Location:</strong> ${item['Location']}</p>
