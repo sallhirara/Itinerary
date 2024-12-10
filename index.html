@@ -147,8 +147,8 @@
             padding-top: 0px;
         }
 
-        .timeline-item .content .summary {
-            font-size: 24px;
+        .timeline-item .content .title {
+            font-size: 25px;
             color: var(--text-color);
             margin-bottom: 5px;
         }
@@ -171,6 +171,19 @@
         .timeline-item .content .details.expanded {
             max-height: 1000px; /* 適切な最大高さを設定 */
             opacity: 1; /* 完全に表示 */
+        }
+
+        .timeline-item .content .details {
+            font-size: 14px;
+        }
+
+        .timeline-item .content .details .summary {
+            margin-bottom: 10px;
+        }
+
+        .timeline-item .content .details .description,
+        .timeline-item .content .details .location {
+            margin-left: 45px; /* Description の余白 */
         }
 
         input {
@@ -290,10 +303,10 @@
                     dateElement.textContent = formatDate(dateObject); // フォーマット後の日付を設定
                     content.appendChild(dateElement);
 
-                    const summary = document.createElement('div');
-                    summary.classList.add('summary');
-                    summary.textContent = groupedData[date][0]['Summary'] || 'No Summary';
-                    content.appendChild(summary);
+                    const title = document.createElement('div');
+                    title.classList.add('title');
+                    title.textContent = groupedData[date][0]['Title'] || 'No Title';
+                    content.appendChild(title);
 
                     const details = document.createElement('div');
                     details.classList.add('details'); // Initially hidden
@@ -304,10 +317,11 @@
 
                         const div = document.createElement('div');
                         div.innerHTML = `
-                            <p>${timeFormatted} - ${item['Title']}</p>
-                            <p>${item['Details']}</p>
-                            ${item['Link'] ? `<a href="${item['Link']}" target="_blank">Link</a>` : ''}
-                            <p><strong>Location:</strong> ${item['Location']}</p>
+                            ${item['Summary'] ? `<p class="summary">${item['Summary']}</p>` : ''}
+                            ${timeValue ? `<p>${timeFormatted} - ${item['Items'] || ''}</p>` : ''}
+                            ${item['Description'] ? `<p class="description">${item['Description']}</p>` : ''}
+                            ${item['Location'] ? `<p class="location"><strong>Location:</strong> ${item['Location']}</p>` : ''}
+                            ${item['Link1'] ? `<a href="${item['Link1']}" target="_blank">Link1</a>` : ''}
                         `;
                         details.appendChild(div);
                     });
