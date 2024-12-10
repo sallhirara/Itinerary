@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-    <title>Excel to Timeline</title>
+    <title>Itinerary</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
     <style>
@@ -14,18 +14,44 @@
             padding: 0;
         }
 
+        :root {
+            --primary-color: #fff;
+            --secondary-color: #333;
+            --background-color: #222;
+            --text-color: #f4f4f9;
+            --trans-dur: 0.3s;
+            --trans-timing: cubic-bezier(0.65,0,0.35,1);
+            font-size: calc(16px + (24 - 16) * (100vw - 320px) / (2560 - 320));
+        }
+
+        [data-theme="light"] {
+            --primary-color: #222;
+            --secondary-color: #cfcfcf;
+            --background-color: #f4f4f9;
+            --text-color: #000;
+        }
+
         body {
             font: 1em/1.5 'Arial, Helvetica, sans-serif';
-            background-color: #f4f4f9;
-            margin: 0;
-            padding: 0;
+            background-color: var(--background-color);
+            height: 100vh;
+            color: var(--text-color);
+
+            transition:
+                background-color var(--trans-dur),
+                color var(--trans-dur);
+        }
+
+        a {
+            color: var(--primary);
+            transition: color var(--trans-dur);
         }
 
         h1 {
+            font-size: 2em;
             text-align: center;
             padding: 1rem;
-            background-color: #333;
-            color: #fff;
+            color: var(--text-color);
         }
 
         .menu-buttons {
@@ -37,28 +63,39 @@
 
         .menu-buttons button {
             border: 1px solid transparent;
-            border-radius: 5px;
+            border-radius: 50%;
             background-color: transparent;
             color: var(--primary-color);
             padding: 0.5em;
             cursor: pointer;
             font-size: var(--font-size-base);
+            transition:
+                background-color calc(var(--trans-dur) / 2) linear,
+                color var(--trans-dur);
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .menu-buttons button:hover {
+            background-color: grey;
         }
 
         .timeline {
-            margin: 20px 20px;
-            max-width: 800px;
+            margin: auto;
+            padding: 0 1.5em;
+            width: 100%;
+            max-width: 36em;
             position: relative;
         }
 
+        /* line */
         .timeline::before {
             content: '';
             position: absolute;
             top: 5px;
-            left: 36px;
-            width: 3px;
+            margin-left: 37px;
+            width: 1px;
             height: 100%;
-            background: #333;
+            background: var(--primary-color);
         }
 
         .timeline-item {
@@ -76,7 +113,7 @@
             align-items: center;
             cursor: pointer;
             margin-right: 0px;
-            transition: transform 0.3s ease;
+            transition: transform var(--trans-dur) var(--trans-timing);
             transform: rotate(0deg);
         }
 
@@ -87,7 +124,7 @@
         .timeline-item .dot {
             width: 15px;
             height: 15px;
-            background: #333;
+            background: var(--primary-color);
             border-radius: 50%;
             position: absolute;
             left: 30px;
@@ -102,29 +139,36 @@
 
         .timeline-item .content .date {
             height: 20px;
-            font-size: 1rem;
-            color: #333;
+            font-size: 12px;
+            color: var(--primary-color);
             margin-bottom: 5px;
-            padding-top: 2px;
+            padding-top: 0px;
         }
 
         .timeline-item .content .summary {
-            font-size: 20px;
-            color: #555;
+            font-size: 24px;
+            color: var(--text-color);
             margin-bottom: 5px;
         }
 
         .timeline-item .content .details {
-            background: #fff;
-            border: 1px solid #ccc;
-            border-radius: 5px;
+            background: var(--secondary-color);
+            color: var(--text-color);
+            border-color: var(--secondary-color);
+            border-radius: 10px;
             padding: 10px;
             box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-            display: none; /* Initially hidden */
+            max-height: 0; /* 初期の高さ */
+            opacity: 0; /* 初期の透明度 */
+            overflow: hidden; /* コンテンツのオーバーフローを隠す */
+            transition:
+                max-height var(--trans-dur) var(--trans-timing),
+                opacity var(--trans-dur) steps(1, end);
         }
 
         .timeline-item .content .details.expanded {
-            display: block; /* Shown when expanded */
+            max-height: 1000px; /* 適切な最大高さを設定 */
+            opacity: 1; /* 完全に表示 */
         }
 
         input {
@@ -134,10 +178,11 @@
             border: 1px solid #ccc;
             border-radius: 5px;
             font-size: 1em;
+            
         }
     </style>
 </head>
-<body>
+<body data-theme="dark">
     <h1>ITINERARY</h1>
     <div class="menu-buttons">
         <button id="fileUpload" onclick="toggleAllEvents()"><i class="fa-solid fa-file-arrow-down"></i></button>
@@ -151,6 +196,12 @@
     <div class="timeline" id="timeline"></div>
 
     <script>
+        function toggleTheme() {
+            const body = document.body;
+            const currentTheme = body.getAttribute("data-theme");
+            body.setAttribute("data-theme", currentTheme === "dark" ? "light" : "dark");
+        }
+
         // シリアル値を日付に変換する関数
         function convertExcelDate(excelDate) {
             const baseDate = new Date(1900, 0, 1); // Excelの基準日 (1900-01-01)
@@ -234,7 +285,7 @@
 
                     const summary = document.createElement('div');
                     summary.classList.add('summary');
-                    summary.textContent = groupedData[date][0]['Title'] || 'No Title';
+                    summary.textContent = groupedData[date][0]['Summary'] || 'No Summary';
                     content.appendChild(summary);
 
                     const details = document.createElement('div');
