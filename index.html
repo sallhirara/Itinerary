@@ -189,7 +189,8 @@
         }
 
         .timeline-item .content .details .description,
-        .timeline-item .content .details .location {
+        .timeline-item .content .details .location,
+        .timeline-item .content .details .googleMap {
             margin-left: 45px; /* Description の余白 */
         }
 
@@ -388,7 +389,7 @@
                             ${timeValue ? `<p>${timeFormatted} - ${item['Items'] || ''}</p>` : ''}
                             ${item['Description'] ? `<p class="description">${item['Description']}</p>` : ''}
                             ${item['Location'] ? `<p class="location">Location: ${item['Location']}</p>` : ''}
-                            ${item['Link1'] ? `<a href="${item['Link1']}" target="_blank">Link1</a>` : ''}
+                            ${item['Map'] ? `<a class="googleMap" href="${item['Map']}" target="_blank">Google Map</a>` : ''}
                         `;
                         details.appendChild(div);
                     });
