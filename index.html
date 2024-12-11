@@ -144,6 +144,8 @@
         .timeline-item .content {
             margin-left: 35px;
             flex-grow: 1;
+            overflow-wrap: break-word; /* 単語が長くても折り返し */
+            word-break: break-word; /* 長い単語を適切に分割 */
             white-space: normal; /* 改行を許可 */
         }
 
