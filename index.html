@@ -93,7 +93,7 @@
             content: '';
             position: absolute;
             top: var(--timeline-line-top, 0px); /* 高さを動的に設定 */
-            margin-left: 37px; /* 横位置を固定 */
+            margin-left: 41px; /* 横位置を固定 */
             width: 1px; /* 線の太さ */
             height: var(--timeline-line-height, 100%); /* 高さを動的に設定 */
             background: var(--primary-color);
@@ -102,7 +102,7 @@
         .timeline-item {
             display: flex;
             align-items: flex-start;
-            margin: 20px 0;
+            margin: 20px 5px;
             position: relative;
         }
 
@@ -127,8 +127,8 @@
         }
 
         .timeline-item .dot {
-            width: 15px;
-            height: 15px;
+            width: 12px;
+            height: 12px;
             background: var(--primary-color);
             border-radius: 50%;
             position: absolute;
@@ -138,13 +138,13 @@
         }
 
         .timeline-item .content {
-            margin-left: 35px;
+            margin-left: 40px;
             flex-grow: 1;
         }
 
         .timeline-item .content .date {
             height: 20px;
-            font-size: 12px;
+            font-size: 14px;
             color: var(--primary-color);
             margin-bottom: 5px;
             padding-top: 0px;
