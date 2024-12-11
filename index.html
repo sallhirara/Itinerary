@@ -86,6 +86,7 @@
             width: 100%;
             max-width: 36em;
             position: relative;
+            border: solid 1px red;
         }
 
         /* line */
@@ -104,6 +105,7 @@
             align-items: flex-start;
             margin: 20px 5px;
             position: relative;
+            border: solid 1px blue;
         }
 
         .timeline-item .toggle {
@@ -144,9 +146,8 @@
         .timeline-item .content {
             margin-left: 35px;
             flex-grow: 1;
-            overflow-wrap: break-word; /* 単語が長くても折り返し */
-            word-break: break-word; /* 長い単語を適切に分割 */
-            white-space: normal; /* 改行を許可 */
+            max-width: 87%;
+            border: solid 1px yellow;
         }
 
         .timeline-item .content .date {
