@@ -17,7 +17,7 @@
         :root {
             --primary-color: #fff;
             --secondary-color: #333;
-            --background-color: #222;
+            --background-color: #111;
             --text-color: #f4f4f9;
             --trans-dur: 0.3s;
             --trans-timing: cubic-bezier(0.65,0,0.35,1);
@@ -36,7 +36,6 @@
             background-color: var(--background-color);
             height: 100vh;
             color: var(--text-color);
-
             transition:
                 background-color var(--trans-dur),
                 color var(--trans-dur);
@@ -93,10 +92,10 @@
         .timeline::before {
             content: '';
             position: absolute;
-            top: 5px;
-            margin-left: 37px;
-            width: 1px;
-            height: 100%;
+            top: var(--timeline-line-top, 0px); /* 高さを動的に設定 */
+            margin-left: 37px; /* 横位置を固定 */
+            width: 1px; /* 線の太さ */
+            height: var(--timeline-line-height, 100%); /* 高さを動的に設定 */
             background: var(--primary-color);
         }
 
@@ -108,6 +107,9 @@
         }
 
         .timeline-item .toggle {
+            display: flex;
+            justify-content: center;
+            align-items: center;
             font-size: 20px;
             height: 20px;
             width: 20px;
@@ -118,6 +120,7 @@
             transition: transform var(--trans-dur) var(--trans-timing);
             transform: rotate(0deg);
         }
+      
 
         .timeline-item .toggle.collapsed {
             transform: rotate(-90deg);
@@ -221,6 +224,61 @@
             const currentTheme = body.getAttribute("data-theme");
             body.setAttribute("data-theme", currentTheme === "dark" ? "light" : "dark");
         }
+      
+      
+
+        function adjustTimelineLineHeight() {
+            const timeline = document.querySelector('.timeline'); // .timeline 要素
+            const dots = document.querySelectorAll('.timeline-item .dot'); // .dot 要素
+
+            if (!timeline || dots.length < 2) {
+                console.warn('Timeline or dots are not properly set up.');
+                return;
+            }
+
+            // 一番上と一番下の .dot を取得
+            const firstDot = dots[0];
+            const lastDot = dots[dots.length - 1];
+
+            // .dot の中心位置を計算
+            const firstDotRect = firstDot.getBoundingClientRect();
+            const lastDotRect = lastDot.getBoundingClientRect();
+            const timelineRect = timeline.getBoundingClientRect();
+
+            const firstDotCenterY = firstDotRect.top + firstDotRect.height / 2;
+            const lastDotCenterY = lastDotRect.top + lastDotRect.height / 2;
+
+            // .timeline の基準位置に対する相対座標を計算
+            const lineTop = firstDotCenterY - timelineRect.top;
+            const lineHeight = lastDotCenterY - firstDotCenterY;
+
+            // 擬似要素用のCSSカスタムプロパティを設定（高さのみ）
+            timeline.style.setProperty('--timeline-line-top', `${lineTop}px`);
+            timeline.style.setProperty('--timeline-line-height', `${lineHeight}px`);
+        }
+
+        // ファイル読み込み後に呼び出す関数
+        function onFileLoaded() {
+            const timeline = document.getElementById('timeline');
+            if (!timeline) return;
+
+            // タイムラインを構築するロジックが完了した後に再計算
+            setTimeout(() => {
+                adjustTimelineLineHeight();
+            }, 0);
+        }      
+
+        // ページロード時とリサイズ時に適用
+        window.addEventListener('load', adjustTimelineLineHeight);
+        window.addEventListener('resize', adjustTimelineLineHeight);
+
+        // トグルクリック時のイベント処理に再計算を追加
+        document.addEventListener('click', (event) => {
+            if (event.target.closest('.timeline-item .toggle')) {
+                setTimeout(adjustTimelineLineHeight, 300); // トランジション後に再計算
+            }
+        });
+      
 
         // シリアル値を日付に変換する関数
         function convertExcelDate(excelDate) {
@@ -281,7 +339,7 @@
 
                     const toggle = document.createElement('div');
                     toggle.classList.add('toggle', 'collapsed'); // Initially collapsed
-                    toggle.innerHTML = '<i class="fas fa-solid fa-circle-chevron-down"></i>';
+                    toggle.innerHTML = '<i class="fas fa-solid fa-caret-down"></i>';
                     toggle.addEventListener('click', () => {
                         details.classList.toggle('expanded');
                         toggle.classList.toggle('collapsed');
@@ -330,6 +388,10 @@
                     groupDiv.appendChild(content);
                     timeline.appendChild(groupDiv);
                 });
+              
+                // タイムラインが構築された後に高さを再計算
+                onFileLoaded();              
+                
             };
 
             reader.readAsArrayBuffer(file);
