@@ -54,6 +54,16 @@
                 color var(--trans-dur);
         }
       
+html {
+    background-color: var(--bg);
+    padding-top: env(safe-area-inset-top);
+    padding-bottom: env(safe-area-inset-bottom);
+    transition:
+        background-color var(--trans-dur),
+        color var(--trans-dur);
+}
+      
+      
         body {
             padding-top: env(safe-area-inset-top);
             padding-bottom: env(safe-area-inset-bottom);
