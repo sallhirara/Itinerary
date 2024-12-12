@@ -15,31 +15,40 @@
         }
 
         :root {
-            --primary-color: #fff;
-            --secondary-color: #333;
-            --background-color: #111;
-            --text-color: #f4f4f9;
+            --hue: 111;
+          
+            --bg: hsl(var(--hue), 0%, 10%) /* Dark mode backghround color*/
+            --fg: hsl(var(--hue), 10%, 90%) /* Dark mode backghround color*/
+
+            --primary-color: hsl(var(--hue), 90%, 70%);
+            --secondary-color: hsl(var(--hue), 0%, 10%);              
+              
             --trans-dur: 0.3s;
             --trans-timing: cubic-bezier(0.65,0,0.35,1);
             font-size: calc(16px + (24 - 16) * (100vw - 320px) / (2560 - 320));
         }
-
-        [data-theme="light"] {
-            --primary-color: #222;
-            --secondary-color: #cfcfcf;
-            --background-color: #f4f4f9;
-            --text-color: #000;
-        }
-
-        html {
-            background-color: var(--background-color);        
+      
+        [data-theme="dark"] {
+            --bg: hsl(var(--hue), 0%, 10%);
+            --fg: hsl(var(--hue), 10%, 90%);
+          
+            --primary-color: hsl(var(--hue), 90%, 70%);
+            --secondary-color: hsl(var(--hue), 0%, 50%, 0.2);          
         }
       
+        [data-theme="light"] {
+            --bg: hsl(var(--hue), 0%, 100%);
+            --fg: hsl(var(--hue), 0%, 10%);
+
+            --primary-color: hsl(var(--hue), 90%, 70%);
+            --secondary-color: hsl(var(--hue), 0%, 90%);
+        }
+
         body {
             font: 1em/1.5 'Arial, Helvetica, sans-serif';
-            background-color: var(--background-color);
+            background-color: var(--bg);
             height: 100vh;
-            color: var(--text-color);
+            color: var(--fg);
             transition:
                 background-color var(--trans-dur),
                 color var(--trans-dur);
@@ -54,7 +63,7 @@
             font-size: 24px;
             text-align: center;
             padding: 2rem 0 0.5rem 0;
-            color: var(--text-color);
+            color: var(--fg);
         }
 
         .menu-buttons {
@@ -70,7 +79,7 @@
             border: 1px solid transparent;
             border-radius: 50%;
             background-color: transparent;
-            color: var(--primary-color);
+            color: var(--fg);
             cursor: pointer;
             font-size: 15px;
             transition:
@@ -99,7 +108,7 @@
             margin-left: 46px; /* 横位置を固定 */
             width: 1px; /* 線の太さ */
             height: var(--timeline-line-height, 100%); /* 高さを動的に設定 */
-            background: var(--primary-color);
+            background: var(--fg);
         }
 
         .timeline-item {
@@ -136,7 +145,7 @@
         .timeline-item .dot {
             width: 12px;
             height: 12px;
-            background: var(--primary-color);
+            background: var(--fg);
             border-radius: 50%;
             position: absolute;
             left: 35px;
@@ -153,20 +162,20 @@
         .timeline-item .content .date {
             height: 20px;
             font-size: 14px;
-            color: var(--primary-color);
+            color: var(--fg);
             margin-top: 5px;
             padding-top: 0px;
         }
 
         .timeline-item .content .title {
             font-size: 25px;
-            color: var(--text-color);
+            color: var(--fg);
             margin-bottom: 5px;
         }
 
         .timeline-item .content .details {
             background: var(--secondary-color);
-            color: var(--text-color);
+            color: var(--fg);
             border-color: var(--secondary-color);
             border-radius: 10px;
             padding: 10px;
@@ -207,10 +216,15 @@
             font-style: italic;
             
         }
+
+        html {
+            overflow-y: scroll;
+        }
         
     </style>
 </head>
 <body data-theme="dark">
+
     <h1>ITINERARY</h1>
     <div id="fileName" style="text-align: center; margin-bottom: 30px; color: grey; font-size: 14px;"></div>
 
@@ -245,13 +259,13 @@
             document.getElementById('fileInput').click();
         }
 
-        function toggleTheme() {
-            const body = document.body;
-            const currentTheme = body.getAttribute("data-theme");
-            body.setAttribute("data-theme", currentTheme === "dark" ? "light" : "dark");
-        }
-      
-      
+function toggleTheme() {
+    const currentTheme = document.body.getAttribute("data-theme");
+    const newTheme = currentTheme === "light" ? "dark" : "light";
+    document.body.setAttribute("data-theme", newTheme);
+}
+
+    
 
         function adjustTimelineLineHeight() {
             const timeline = document.querySelector('.timeline'); // .timeline 要素
