@@ -200,6 +200,10 @@
         .timeline-item .content .details .summary {
             margin-bottom: 10px;
         }
+      
+        .timeline-item .content .details .timeandItems {
+          margin-top: 5px;
+        }
 
         .timeline-item .content .details .description,
         .timeline-item .content .details .location,
@@ -407,13 +411,14 @@
 
                     const details = document.createElement('div');
                     details.classList.add('details'); // Initially hidden
+
                     groupedData[date].forEach(item => {
                         const timeValue = item['Time'];
                         const timeFormatted = isNaN(timeValue) ? timeValue : formatTime(timeValue);
                         const div = document.createElement('div');
                         div.innerHTML = `
                             ${item['Summary'] ? `<p class="summary">${item['Summary']}</p>` : ''}
-                            ${timeValue ? `<p>${timeFormatted} - ${item['Items'] || ''}</p>` : ''}
+                            ${timeValue ? `<p class="timeandItems">${timeFormatted} - ${item['Items'] || ''}</p>` : ''}
                             ${item['Description'] ? `<p class="description">${item['Description']}</p>` : ''}
                             ${item['Location'] ? `<p class="location">Location: ${item['Location']}</p>` : ''}
                             ${item['Map'] ? `<a class="googleMap" href="${item['Map']}" target="_blank">Google Map</a>` : ''}
