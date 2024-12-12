@@ -31,6 +31,10 @@
             --text-color: #000;
         }
 
+        html {
+            background-color: var(--background-color);        
+        }
+      
         body {
             font: 1em/1.5 'Arial, Helvetica, sans-serif';
             background-color: var(--background-color);
@@ -203,14 +207,10 @@
             font-style: italic;
             
         }
-
-        html {
-            overflow-y: scroll;
-        }
         
     </style>
 </head>
-<body>
+<body data-theme="dark">
     <h1>ITINERARY</h1>
     <div id="fileName" style="text-align: center; margin-bottom: 30px; color: grey; font-size: 14px;"></div>
 
