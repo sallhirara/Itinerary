@@ -174,6 +174,7 @@
         }
 
         .timeline-item .content .details {
+            font-size: 14px;
             background: var(--secondary-color);
             color: var(--fg);
             border-color: var(--secondary-color);
@@ -185,16 +186,13 @@
             overflow: hidden; /* コンテンツのオーバーフローを隠す */
             transition:
                 max-height var(--trans-dur) var(--trans-timing),
-                opacity var(--trans-dur) steps(1, end);
+                opacity var(--trans-dur)  0s;
         }
 
         .timeline-item .content .details.expanded {
             max-height: 1000px; /* 適切な最大高さを設定 */
             opacity: 1; /* 完全に表示 */
-        }
 
-        .timeline-item .content .details {
-            font-size: 14px;
         }
 
         .timeline-item .content .details .summary {
@@ -270,35 +268,65 @@
         });
     
 
-        function adjustTimelineLineHeight() {
-            const timeline = document.querySelector('.timeline'); // .timeline 要素
-            const dots = document.querySelectorAll('.timeline-item .dot'); // .dot 要素
+function adjustTimelineLineHeight() {
+    const timeline = document.querySelector('.timeline');
+    const dots = document.querySelectorAll('.timeline-item .dot');
 
-            if (!timeline || dots.length < 2) {
-                console.warn('Timeline or dots are not properly set up.');
-                return;
+    if (!timeline || dots.length === 0) return;
+
+    const firstDot = dots[0];
+    const lastDot = dots[dots.length - 1];
+
+    const timelineRect = timeline.getBoundingClientRect();
+    const firstDotRect = firstDot.getBoundingClientRect();
+    const lastDotRect = lastDot.getBoundingClientRect();
+
+    const lineTop = firstDotRect.top - timelineRect.top + firstDotRect.height / 2;
+    const lineHeight = lastDotRect.top - firstDotRect.top;
+
+    timeline.style.setProperty('--timeline-line-top', `${lineTop}px`);
+    timeline.style.setProperty('--timeline-line-height', `${lineHeight}px`);
+}
+
+// アニメーション開始と終了時に対応
+document.addEventListener('click', (event) => {
+    const toggle = event.target.closest('.timeline-item .toggle');
+    if (toggle) {
+        const timelineItem = toggle.closest('.timeline-item');
+        const details = timelineItem.querySelector('.details');
+
+        if (!details) return;
+
+        // リアルタイム更新
+        function updateLineHeight() {
+            adjustTimelineLineHeight();
+            if (getComputedStyle(details).maxHeight !== '0px') {
+                requestAnimationFrame(updateLineHeight);
             }
-
-            // 一番上と一番下の .dot を取得
-            const firstDot = dots[0];
-            const lastDot = dots[dots.length - 1];
-
-            // .dot の中心位置を計算
-            const firstDotRect = firstDot.getBoundingClientRect();
-            const lastDotRect = lastDot.getBoundingClientRect();
-            const timelineRect = timeline.getBoundingClientRect();
-
-            const firstDotCenterY = firstDotRect.top + firstDotRect.height / 2;
-            const lastDotCenterY = lastDotRect.top + lastDotRect.height / 2;
-
-            // .timeline の基準位置に対する相対座標を計算
-            const lineTop = firstDotCenterY - timelineRect.top;
-            const lineHeight = lastDotCenterY - firstDotCenterY;
-
-            // 擬似要素用のCSSカスタムプロパティを設定（高さのみ）
-            timeline.style.setProperty('--timeline-line-top', `${lineTop}px`);
-            timeline.style.setProperty('--timeline-line-height', `${lineHeight}px`);
         }
+
+        // アニメーション終了時の正確な計算
+        details.addEventListener(
+            'transitionend',
+            () => adjustTimelineLineHeight(),
+            { once: true }
+        );
+
+        // アニメーション開始時に即座に計算
+        adjustTimelineLineHeight();
+        requestAnimationFrame(updateLineHeight);
+    }
+});
+
+// 初期ロードとリサイズ時の高さ調整
+document.addEventListener('DOMContentLoaded', adjustTimelineLineHeight);
+window.addEventListener('resize', adjustTimelineLineHeight);
+
+
+
+
+      
+      
 
         // ファイル読み込み後に呼び出す関数
         function onFileLoaded() {
@@ -309,7 +337,7 @@
             setTimeout(() => {
                 adjustTimelineLineHeight();
             }, 0);
-        }      
+        }
 
         // ページロード時とリサイズ時に適用
         window.addEventListener('load', adjustTimelineLineHeight);
@@ -318,9 +346,15 @@
         // トグルクリック時のイベント処理に再計算を追加
         document.addEventListener('click', (event) => {
             if (event.target.closest('.timeline-item .toggle')) {
-                setTimeout(adjustTimelineLineHeight, 300); // トランジション後に再計算
+                // CSS変数からアニメーション時間を取得
+                const transitionDuration = parseFloat(
+                    getComputedStyle(document.documentElement).getPropertyValue('--trans-dur')
+                ) * 1000;
+
+                setTimeout(adjustTimelineLineHeight, transitionDuration);
             }
         });
+
       
 
         // シリアル値を日付に変換する関数
