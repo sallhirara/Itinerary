@@ -265,64 +265,61 @@
         });
     
 
-function adjustTimelineLineHeight() {
-    const timeline = document.querySelector('.timeline');
-    const dots = document.querySelectorAll('.timeline-item .dot');
+      
+        function adjustTimelineLineHeight() {
+            const timeline = document.querySelector('.timeline');
+            const dots = document.querySelectorAll('.timeline-item .dot');
 
-    if (!timeline || dots.length === 0) return;
+            if (!timeline || dots.length === 0) return;
 
-    const firstDot = dots[0];
-    const lastDot = dots[dots.length - 1];
+            const firstDot = dots[0];
+            const lastDot = dots[dots.length - 1];
 
-    const timelineRect = timeline.getBoundingClientRect();
-    const firstDotRect = firstDot.getBoundingClientRect();
-    const lastDotRect = lastDot.getBoundingClientRect();
+            const timelineRect = timeline.getBoundingClientRect();
+            const firstDotRect = firstDot.getBoundingClientRect();
+            const lastDotRect = lastDot.getBoundingClientRect();
 
-    const lineTop = firstDotRect.top - timelineRect.top + firstDotRect.height / 2;
-    const lineHeight = lastDotRect.top - firstDotRect.top;
+            const lineTop = firstDotRect.top - timelineRect.top + firstDotRect.height / 2;
+            const lineHeight = lastDotRect.top - firstDotRect.top;
 
-    timeline.style.setProperty('--timeline-line-top', `${lineTop}px`);
-    timeline.style.setProperty('--timeline-line-height', `${lineHeight}px`);
-}
-
-// アニメーション開始と終了時に対応
-document.addEventListener('click', (event) => {
-    const toggle = event.target.closest('.timeline-item .toggle');
-    if (toggle) {
-        const timelineItem = toggle.closest('.timeline-item');
-        const details = timelineItem.querySelector('.details');
-
-        if (!details) return;
-
-        // リアルタイム更新
-        function updateLineHeight() {
-            adjustTimelineLineHeight();
-            if (getComputedStyle(details).maxHeight !== '0px') {
-                requestAnimationFrame(updateLineHeight);
-            }
+            timeline.style.setProperty('--timeline-line-top', `${lineTop}px`);
+            timeline.style.setProperty('--timeline-line-height', `${lineHeight}px`);
         }
 
-        // アニメーション終了時の正確な計算
-        details.addEventListener(
-            'transitionend',
-            () => adjustTimelineLineHeight(),
-            { once: true }
-        );
+        // アニメーション開始と終了時に対応
+        document.addEventListener('click', (event) => {
+            const toggle = event.target.closest('.timeline-item .toggle');
+            if (toggle) {
+                const timelineItem = toggle.closest('.timeline-item');
+                const details = timelineItem.querySelector('.details');
 
-        // アニメーション開始時に即座に計算
-        adjustTimelineLineHeight();
-        requestAnimationFrame(updateLineHeight);
-    }
-});
+                if (!details) return;
 
-// 初期ロードとリサイズ時の高さ調整
-document.addEventListener('DOMContentLoaded', adjustTimelineLineHeight);
-window.addEventListener('resize', adjustTimelineLineHeight);
+                // リアルタイム更新
+                function updateLineHeight() {
+                    adjustTimelineLineHeight();
+                    if (getComputedStyle(details).maxHeight !== '0px') {
+                        requestAnimationFrame(updateLineHeight);
+                    }
+                }
 
+                // アニメーション終了時の正確な計算
+                details.addEventListener(
+                    'transitionend',
+                    () => adjustTimelineLineHeight(),
+                    { once: true }
+                );
 
+                // アニメーション開始時に即座に計算
+                adjustTimelineLineHeight();
+                requestAnimationFrame(updateLineHeight);
+            }
+        });
 
+        // 初期ロードとリサイズ時の高さ調整
+        document.addEventListener('DOMContentLoaded', adjustTimelineLineHeight);
+        window.addEventListener('resize', adjustTimelineLineHeight);
 
-      
       
 
         // ファイル読み込み後に呼び出す関数
