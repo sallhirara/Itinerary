@@ -303,7 +303,7 @@
         .ql-container {
             margin: 0 auto;
             border-radius: 10px;
-            width: 90%;
+            width: 80%;
             background-color: hsl(var(--hue),10%,50%,0.2);
             border: 1px solid transparent !important;
         }
@@ -404,6 +404,19 @@ var quill = new Quill('#editor', {
                 quill.format('link', value);  // リンクを挿入
             }
         });
+
+        //Position of Popup
+        quill.on('selection-change', (range) => {
+            if (range) {
+                const bounds = quill.getBounds(range);
+                popup.style.top = `${bounds.top - 30}px`; // テキストの上に配置
+                popup.style.left = `50%`; // 中央に配置
+                popup.style.display = 'block'; // ポップアップを表示
+            } else {
+                popup.style.display = 'none'; // 選択が解除されたら非表示
+            }
+        });
+
 
 
         // ファイル選択ダイアログを表示
@@ -641,26 +654,61 @@ var quill = new Quill('#editor', {
         };
 
         // ボタンにイベントを設定
-        document.getElementById('theme-toggle').addEventListener('click', toggleTheme);
-
-
-      
-        //Position of Popup
-        quill.on('selection-change', (range) => {
-            if (range) {
-                const bounds = quill.getBounds(range);
-                popup.style.top = `${bounds.top - 30}px`; // テキストの上に配置
-                popup.style.left = `50%`; // 中央に配置
-                popup.style.display = 'block'; // ポップアップを表示
-            } else {
-                popup.style.display = 'none'; // 選択が解除されたら非表示
-            }
-        });
-
-        
+        document.getElementById('theme-toggle').addEventListener('click', toggleTheme);        
         document.getElementById('theme-toggle').addEventListener('click', function() {
         document.body.classList.toggle('light-mode');
         });
+
+
+        // Saveボタンのクリックで内容をローカルストレージに保存
+        document.querySelector('.fa-save').closest('button').addEventListener('click', function() {
+        const content = quill.root.innerHTML; // Quillの内容を取得
+        localStorage.setItem('quillContent', content); // ローカルストレージに保存
+        alert('Note saved successfully!');
+        });
+
+        // ページロード時に保存された内容を自動で読み込む
+        window.addEventListener('load', function() {
+        const savedContent = localStorage.getItem('quillContent');
+            if (savedContent) {
+                quill.root.innerHTML = savedContent; // Quillに内容を設定
+            }
+        });
+
+
+        
+        // Undoボタンのクリックで取り消しを実行
+        document.querySelector('.fa-rotate-left').closest('button').addEventListener('click', function() {
+        quill.history.undo(); // Quillの履歴機能で取り消し
+        });
+    
+        // Redoボタンのクリックでやり直しを実行
+        document.querySelector('.fa-rotate-right').closest('button').addEventListener('click', function() {
+        quill.history.redo(); // Quillの履歴機能でやり直し
+        });
+    
+        
+        // Trash-canボタンのクリックで内容をリセット
+        document.querySelector('.fa-trash-can').closest('button').addEventListener('click', function() {
+        quill.root.innerHTML = ''; // Quillエディターの内容を空にする
+        localStorage.removeItem('quillContent'); // ローカルストレージからも削除
+        alert('Are you sure you want to reset all Notes?');
+        });
+    
+
+        
+        function handleOrientationChange() {
+			if (window.matchmedia("(orientation: portait)").matches) {
+				document.body.style.width = "100%";
+			} else if (window.matchmedia("(orientation: landscape)").matches) {
+				document.body.style.width = "100vw";
+			}
+		}
+
+
+		window.addEventListener("orientationchange", handleOrientationChange);
+		window.addEventListener("resize", handleOrientationChange);
+		handleOrientationChange();
 
 
 
