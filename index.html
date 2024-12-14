@@ -660,40 +660,7 @@ var quill = new Quill('#editor', {
         });
 
 
-        // Saveボタンのクリックで内容をローカルストレージに保存
-        document.querySelector('.fa-save').closest('button').addEventListener('click', function() {
-        const content = quill.root.innerHTML; // Quillの内容を取得
-        localStorage.setItem('quillContent', content); // ローカルストレージに保存
-        alert('Note saved successfully!');
-        });
 
-        // ページロード時に保存された内容を自動で読み込む
-        window.addEventListener('load', function() {
-        const savedContent = localStorage.getItem('quillContent');
-            if (savedContent) {
-                quill.root.innerHTML = savedContent; // Quillに内容を設定
-            }
-        });
-
-
-        
-        // Undoボタンのクリックで取り消しを実行
-        document.querySelector('.fa-rotate-left').closest('button').addEventListener('click', function() {
-        quill.history.undo(); // Quillの履歴機能で取り消し
-        });
-    
-        // Redoボタンのクリックでやり直しを実行
-        document.querySelector('.fa-rotate-right').closest('button').addEventListener('click', function() {
-        quill.history.redo(); // Quillの履歴機能でやり直し
-        });
-    
-        
-        // Trash-canボタンのクリックで内容をリセット
-        document.querySelector('.fa-trash-can').closest('button').addEventListener('click', function() {
-        quill.root.innerHTML = ''; // Quillエディターの内容を空にする
-        localStorage.removeItem('quillContent'); // ローカルストレージからも削除
-        alert('Are you sure you want to reset all Notes?');
-        });
     
 
         
