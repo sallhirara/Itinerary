@@ -188,7 +188,7 @@
         }
 
         .timeline-item .content .details.expanded {
-            max-height: 500px; /* 適切な最大高さを設定 */
+            max-height: 1000px; /* 適切な最大高さを設定 */
             opacity: 1; /* 完全に表示 */
 
         }
@@ -379,8 +379,8 @@
                 const data = new Uint8Array(e.target.result);
                 const workbook = XLSX.read(data, { type: 'array' });
 
-                // Get the first sheet
-                const sheetName = workbook.SheetNames[0];
+                // "Timeline"という名前のシートを取得
+                const sheetName = 'Timeline';
                 const sheet = workbook.Sheets[sheetName];
 
                 // Convert sheet data to JSON
