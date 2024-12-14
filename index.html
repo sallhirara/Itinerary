@@ -173,6 +173,8 @@
             margin-bottom: 5px;
         }
 
+
+
         .timeline-item .content .details {
             font-size: 14px;
             background: var(--secondary-color);
@@ -207,6 +209,18 @@
             margin-left: 45px; /* Description の余白 */
         }
 
+        .timeline-item .content .details .googleMap,
+        .timeline-item .content .details .additional-link {
+            margin-top: 15px;
+            display: inline-block; /* 必要に応じてアイコン位置調整 */
+        }
+
+        .additional-link {
+            margin-left: 15px; /* 上部余白 */
+        }
+
+
+
         input {
             display: block;
             margin: 20px auto;
@@ -229,11 +243,7 @@
     <div id="fileName" style="text-align: center; margin-bottom: 30px; color: grey; font-size: 14px;"></div>
 
     <div class="menu-buttons">
-        <button id="fileUpload" onclick="fileUpload()"><i class="fa-solid fa-file-arrow-down"></i></button>
-        <button id="save-button" onclick="saveEvents()"><i class="fa fa-save"></i></button>
-        <button id="share-button" onclick="shareEvents()"><i class="fa fa-share-alt"></i></button>
-        <button id="toggle-edit" onclick="toggleEditMode()"><i class="fa fa-eye"></i></button>
-        <button id="reset-button" onclick="resetEvents()"><i class="fa fa-undo"></i></button>            
+        <button id="fileUpload" onclick="fileUpload()"><i class="fa-solid fa-file-arrow-down"></i></button>       
         <button id="toggle-theme" onclick="toggleTheme()"><i class="fa fa-adjust"></i></button>
     </div>
     <input type="file" id="fileInput" accept=".xlsx, .xls" style="display: none;" />
@@ -443,7 +453,10 @@
                             ${timeValue ? `<p class="timeandItems">${timeFormatted} - ${item['Items'] || ''}</p>` : ''}
                             ${item['Description'] ? `<p class="description">${item['Description']}</p>` : ''}
                             ${item['Location'] ? `<p class="location">Location: ${item['Location']}</p>` : ''}
-                            ${item['Map'] ? `<a class="googleMap" href="${item['Map']}" target="_blank">Google Map</a>` : ''}
+                            ${item['Map'] ? `<a class="googleMap" href="${item['Map']}" target="_blank"><i class="fa-solid fa-earth-americas"></i></a>` : ''}
+                            ${item['Link1'] ? `<a class="additional-link" href="${item['Link1']}" target="_blank">Link1</a>` : ''}
+                            ${item['Link2'] ? `<a class="additional-link" href="${item['Link2']}" target="_blank">Link2</a>` : ''}
+                            ${item['Link3'] ? `<a class="additional-link" href="${item['Link3']}" target="_blank">Link3</a>` : ''}
                         `;
                         details.appendChild(div);
                     });
