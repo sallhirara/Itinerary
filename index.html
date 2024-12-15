@@ -50,6 +50,7 @@
         body {
             font: 1em/1.5 'Arial, Helvetica, sans-serif';
             color: var(--fg);
+            height: 100vh;
             transition:
                 background-color var(--trans-dur),
                 color var(--trans-dur);
@@ -429,6 +430,17 @@
             background: rgba(0, 0, 0, 0.1); /* ホバー時に軽く背景をつける */
         }
 
+        footer {
+            position: sticky;
+            top: 100vh;
+            top: 100dvh;
+            font-size: 14px;
+            font-family: var(--font-family);
+            color: var(--fg);
+            text-align: center;
+            padding-bottom: 20px;
+        }
+
         html {
             overflow-y: scroll;
         }
@@ -472,6 +484,11 @@
         </div>
         <div id="map-container"></div>
     </div>
+
+    <footer>
+        Copyright © 2024 sakokeisuke Web Page. All rights reserved.
+    </footer>
+
 
 
     <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
