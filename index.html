@@ -102,7 +102,6 @@
       
         #calendar {
             display: table; /* デフォルトのテーブル表示 */
-            width: 200px; /* 必要に応じて最大幅を設定 */
             margin: 2px auto; /* 中央揃え */
             text-align: center; /* テキスト中央揃え */
             border-spacing: 20px 5px;
@@ -110,8 +109,7 @@
         }
 
         #calendar th, #calendar td {
-            padding: 0 10px; /* セル内の余白 */
-            width: 14.2857%; /* 1週間分を均等に分割 */
+            padding: 0 5px; /* セル内の余白 */
         }
 
         #calendar th {
@@ -120,7 +118,6 @@
         }
 
         #calendar td {
-            width: 14.2857%; /* 1週間分を均等に分割 */
             background-color: var(--bg); /* 背景色 */
             color: grey; /* テキスト色 */
             text-align: center; /* テキストを中央揃え */
