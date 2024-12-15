@@ -379,26 +379,35 @@
             left: 50%;
             width: 90%;
             height: 90%;
-            transform: translate(-50%, -50%); /* 画面中央に配置 */
-            z-index: 9999; /* 最前面に表示 */
-            background: #f0f0f0; /* ローディング時の背景色 */
-            border: 2px solid black; /* 枠線（必要に応じて削除可能） */
-            border-radius: 15px; /* 外枠の角丸 */
-            overflow: hidden; /* 子要素を角丸に合わせて切り取る */
+            transform: translate(-50%, -50%) scale(0); /* 非表示状態で縮小 */
+            z-index: 9999;
+            background: #f0f0f0;
+            border-radius: 15px;
+            overflow: hidden;
+            opacity: 0; /* 完全に透明 */
+            transition: 
+                transform var(--trans-dur) var(--trans-timing),
+                opacity var(--trans-dur) var(--trans-timing);
+        }
+
+        #map.show {
+            display: block;
+            transform: translate(-50%, -50%) scale(1); /* 拡大して表示 */
+            opacity: 1; /* 完全に表示 */
         }
 
         #map-container {
             width: 100%;
             height: 100%;
-            border-radius: inherit; /* 外枠の角丸を継承 */
-            overflow: hidden; /* 子要素を角丸に合わせて切り取る */
+            border-radius: inherit;
+            overflow: hidden;
         }
 
         #map-close {
             position: absolute;
             top: 10px;
             right: 10px;
-            z-index: 10000; /* 地図の上に表示 */
+            z-index: 10000;
             background: white;
             color: black;
             padding: 10px;
@@ -460,36 +469,35 @@
     <script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
     <script>
 
-function mapping() {
-    // マップコンテナを取得
-    const mapContainer = document.getElementById('map');
+        function mapping() {
+            const mapContainer = document.getElementById('map');
 
-    // 地図の表示/非表示を切り替え
-    if (mapContainer.style.display === 'block') {
-        mapContainer.style.display = 'none'; // 地図を非表示
-        return;
-    }
+            // 地図の表示/非表示を切り替え
+            if (mapContainer.classList.contains('show')) {
+                mapContainer.classList.remove('show');
+                setTimeout(() => (mapContainer.style.display = 'none'), 300); // アニメーション後に非表示
+                return;
+            }
 
-    // 地図を表示
-    mapContainer.style.display = 'block';
+            mapContainer.style.display = 'block';
+            setTimeout(() => mapContainer.classList.add('show'), 10); // 小さな遅延を入れてクラスを追加
 
-    // 地図が初期化済みなら処理を終了
-    if (window.myMap) return;
+            // 地図が初期化済みなら処理を終了
+            if (window.myMap) return;
 
-    // MapTilerタイルレイヤーの設定
-    const mapTilerApiKey = 'Sv80uSRLZxFEwRiW17Cg';
+            const mapTilerApiKey = 'Sv80uSRLZxFEwRiW17Cg';
 
-    // 地図を初期化
-    window.myMap = L.map('map-container').setView([35.6895, 139.6917], 12); // 東京タワー付近
+            // 地図を初期化
+            window.myMap = L.map('map-container').setView([35.6895, 139.6917], 12);
 
-    // Street View タイルレイヤーを追加
-    const streetLayer = L.tileLayer(`https://api.maptiler.com/maps/basic/{z}/{x}/{y}.png?key=${mapTilerApiKey}`, {
-        attribution: '&copy; <a href="https://www.maptiler.com/copyright/">MapTiler</a> &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-        maxZoom: 18
-    });
+            // Street View タイルレイヤーを追加
+            const streetLayer = L.tileLayer(`https://api.maptiler.com/maps/basic/{z}/{x}/{y}.png?key=${mapTilerApiKey}`, {
+                attribution: '&copy; <a href="https://www.maptiler.com/copyright/">MapTiler</a> &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+                maxZoom: 18
+            });
 
-    streetLayer.addTo(window.myMap);
-}
+            streetLayer.addTo(window.myMap);
+        }
 
         const quill = new Quill('#editor', {
             theme: 'snow',
