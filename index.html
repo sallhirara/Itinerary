@@ -96,55 +96,48 @@
 
         #calendar-container {
           display: none;
-          taxt-align: center;
+          text-align: center;
           margin: 40px;
         }
       
+        #calendar {
+            display: table; /* デフォルトのテーブル表示 */
+            width: 100%; /* 全体の幅を占める */
+            max-width: 400px; /* 必要に応じて最大幅を設定 */
+            margin: 2px auto; /* 中央揃え */
+            text-align: center; /* テキスト中央揃え */
+        }
+
+        #calendar th, #calendar td {
+            padding: 0 10px; /* セル内の余白 */
+            width: 14.2857%; /* 1週間分を均等に分割 */
+        }
+
+        #calendar th {
+            font-weight: bold; /* 曜日ヘッダーを太字 */
+            color: var(--fg); /* テキスト色 */
+        }
+
+        #calendar td {
+            width: 14.2857%; /* 1週間分を均等に分割 */
+            background-color: var(--bg); /* 背景色 */
+            color: grey; /* テキスト色 */
+            text-align: center; /* テキストを中央揃え */
+            vertical-align: middle; /* 垂直方向の中央揃え */
+        }
+
+        #calendar td.highlight {
+            border: 1px solid var(--fg); /* 枠線の色 */
+            border-radius: 50%; /* 正円を保証 */
+            margin: auto; /* セル内で中央配置 */
+            background-color: var(--secondary-color); /* 背景色 */
+            color: var(--fg); /* テキストの色 */
+            text-align: center; /* テキストを中央揃え */
+            align-items: center; /* 垂直方向の中央揃え */
+            justify-content: center; /* 水平方向の中央揃え */
+            font-weight: bold; /* 太字 */
+        }
       
-#calendar {
-    display: table; /* デフォルトのテーブル表示 */
-    width: 100%; /* 全体の幅を占める */
-    max-width: 400px; /* 必要に応じて最大幅を設定 */
-    margin: 2px auto; /* 中央揃え */
-    text-align: center; /* テキスト中央揃え */
-}
-
-#calendar th, #calendar td {
-    padding: 0 10px; /* セル内の余白 */
-    box-sizing: border-box; /* ボックスサイズにパディングを含む */
-    width: 14.2857%; /* 1週間分を均等に分割 */
-}
-
-#calendar th {
-    font-weight: bold; /* 曜日ヘッダーを太字 */
-    color: var(--fg); /* テキスト色 */
-}
-
-#calendar td {
-    width: 14.2857%; /* 1週間分を均等に分割 */
-    height: 30px; /* 縦横を揃えて正方形に近づける */
-    padding: 0; /* 内側の余白をなくす */
-    box-sizing: border-box; /* パディングを含むサイズ指定 */
-    background-color: var(--bg); /* 背景色 */
-    color: var(--fg); /* テキスト色 */
-    text-align: center; /* テキストを中央揃え */
-    vertical-align: middle; /* 垂直方向の中央揃え */
-}
-
-#calendar td.highlight {
-    border: 2px solid var(--primary-color); /* 強調枠線 */
-    border-radius: 50%; /* 完全な円にする */
-    width: 30px; /* ハイライトセルの幅を固定 */
-    height: 30px; /* ハイライトセルの高さを固定 */
-    margin: 0　auto; /* セル内で中央に配置 */
-    display: inline-flex; /* フレックスで中央揃え */
-    align-items: center; /* 垂直方向の中央揃え */
-    justify-content: center; /* 水平方向の中央揃え */
-    font-weight: bold; /* 太字 */
-    background-color: var(--secondary-color); /* オプション：背景色を変更 */
-}
-      
-
         .timeline {
             background-color: transparent;
             margin: auto;
@@ -502,74 +495,105 @@
       
 
       
-// ファイル選択イベントリスナー
-document.getElementById("fileInput").addEventListener("change", handleFile);
+        document.getElementById("fileInput").addEventListener("change", handleFile);
 
-function handleFile(event) {
-    const file = event.target.files[0];
-    if (!file) return;
+        function handleFile(event) {
+            const file = event.target.files[0];
+            if (!file) return;
 
-    const reader = new FileReader();
-    reader.onload = function (e) {
-        const data = new Uint8Array(e.target.result);
-        const workbook = XLSX.read(data, { type: "array" });
-        const sheetName = workbook.SheetNames[0];
-        const sheet = workbook.Sheets[sheetName];
-        const json = XLSX.utils.sheet_to_json(sheet);
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                const data = new Uint8Array(e.target.result);
+                const workbook = XLSX.read(data, { type: "array" });
+                const sheetName = workbook.SheetNames[0];
+                const sheet = workbook.Sheets[sheetName];
+                const json = XLSX.utils.sheet_to_json(sheet);
 
-        // 開始日と終StEnd
-        const startDate = new Date(json[0]["Start"]);
-        const endDate = new Date(json[0]["End"]);
-        generateCalendar(startDate, endDate);
-    };
-    reader.readAsArrayBuffer(file);
-}
+                console.log("Excel Data:", json); // データ確認用
 
-function generateCalendar(startDate, endDate) {
-    const container = document.getElementById("calendar-container");
-    const table = document.getElementById("calendar");
+                // 開始日と終了日の取得
+                const startDate = parseExcelDate(json[0]["Start"]);
+                const endDate = parseExcelDate(json[0]["End"]);
 
-    // カレンダーを初期化
-    table.innerHTML = "";
+                console.log("Start Date:", startDate.toDateString());
+                console.log("End Date:", endDate.toDateString());
 
-    // 曜日ヘッダー
-    const headerRow = document.createElement("tr");
-    ["S", "M", "T", "W", "T", "F", "S"].forEach(day => {
-        const th = document.createElement("th");
-        th.textContent = day;
-        headerRow.appendChild(th);
-    });
-    table.appendChild(headerRow);
+                // カレンダー生成
+                generateCalendar(startDate, endDate);
+            };
+            reader.readAsArrayBuffer(file);
+        }
 
-    // カレンダー作成
-    const start = new Date(startDate);
-    start.setDate(start.getDate() - start.getDay() - 7); // 開始日の前の週
-    const end = new Date(endDate);
-    end.setDate(end.getDate() + (end.getDay()) + 7); // 終了日の次の週
+        function parseExcelDate(value) {
+            if (typeof value === "number") {
+                // Excelシリアル値を日付に変換
+                return convertExcelDate(value);
+            } else if (typeof value === "string") {
+                // 文字列としての日付をパース
+                return new Date(Date.parse(value));
+            } else {
+                console.error("Invalid date format:", value);
+                return new Date(0); // デフォルト値として1970年1月1日
+            }
+        }
 
-    let currentDate = new Date(start);
-    while (currentDate <= end) {
-        const row = document.createElement("tr");
-        for (let i = 0; i < 7; i++) {
-            const cell = document.createElement("td");
-            cell.textContent = currentDate.getDate();
+        function convertExcelDate(excelDate) {
+            const baseDate = new Date(1900, 0, 1);
+            const offset = excelDate - 2; // Excelのシリアル値補正
+            return new Date(baseDate.getTime() + offset * 24 * 60 * 60 * 1000);
+        }
 
-            // 丸で囲む設定
-            if (currentDate >= startDate && currentDate <= endDate) {
-                cell.classList.add("highlight");
+        function generateCalendar(startDate, endDate) {
+            const container = document.getElementById("calendar-container");
+            const table = document.getElementById("calendar");
+
+            // カレンダーを初期化
+            table.innerHTML = "";
+
+            // 曜日ヘッダーを作成
+            const headerRow = document.createElement("tr");
+            ["S", "M", "T", "W", "T", "F", "S"].forEach(day => {
+                const th = document.createElement("th");
+                th.textContent = day;
+                headerRow.appendChild(th);
+            });
+            table.appendChild(headerRow);
+
+            // 開始日と終了日を基にカレンダー範囲を計算
+            const start = new Date(startDate);
+            start.setDate(start.getDate() - start.getDay() - 7); // 開始日の前の週
+            const end = new Date(endDate);
+            end.setDate(end.getDate() + (6 - end.getDay()) + 7); // 終了日の次の週
+
+            let currentDate = new Date(start);
+            while (currentDate <= end) {
+                const row = document.createElement("tr");
+                for (let i = 0; i < 7; i++) {
+                    const cell = document.createElement("td");
+
+                    if (currentDate >= startDate && currentDate <= endDate) {
+                        cell.classList.add("highlight");
+                    }
+
+                    // セルに日付を設定
+                    cell.textContent = currentDate.getDate();
+                    row.appendChild(cell);
+
+                    // 日付を1日進める
+                    currentDate.setDate(currentDate.getDate() + 1);
+                }
+                table.appendChild(row);
             }
 
-            row.appendChild(cell);
-            currentDate.setDate(currentDate.getDate() + 1);
-        }
-        table.appendChild(row);
-    }
+            console.log({
+                currentDate: currentDate.toDateString(),
+                isHighlighted: currentDate >= startDate && currentDate <= endDate
+            });
 
-    // カレンダーを表示
-    container.style.display = "block";
-}
-      
-      
+            // カレンダーを表示
+            container.style.display = "block";
+        }
+
       
         function fileUpload() {
             document.getElementById('fileInput').click();
