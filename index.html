@@ -106,6 +106,7 @@
             max-width: 400px; /* 必要に応じて最大幅を設定 */
             margin: 2px auto; /* 中央揃え */
             text-align: center; /* テキスト中央揃え */
+            border-spacing: 20px 5px;
         }
 
         #calendar th, #calendar td {
@@ -129,13 +130,11 @@
         #calendar td.highlight {
             border: 1px solid var(--fg); /* 枠線の色 */
             border-radius: 50%; /* 正円を保証 */
-            margin: auto; /* セル内で中央配置 */
             background-color: var(--secondary-color); /* 背景色 */
             color: var(--fg); /* テキストの色 */
             text-align: center; /* テキストを中央揃え */
             align-items: center; /* 垂直方向の中央揃え */
             justify-content: center; /* 水平方向の中央揃え */
-            font-weight: bold; /* 太字 */
         }
       
         .timeline {
