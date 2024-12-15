@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     <title>Itinerary</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css"/>
     <link rel="stylesheet" href="https://cdn.quilljs.com/1.3.6/quill.snow.css">
     <link rel="stylesheet" href="https://cdn.quilljs.com/1.3.6/quill.bubble.css">  
     
@@ -371,7 +372,45 @@
         }
         /* ▲▲▲ Quil-editor ▲▲▲ */
 
+        #map {
+            display: none; /* 初期状態は非表示 */
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            width: 90%;
+            height: 90%;
+            transform: translate(-50%, -50%); /* 画面中央に配置 */
+            z-index: 9999; /* 最前面に表示 */
+            background: #f0f0f0; /* ローディング時の背景色 */
+            border: 2px solid black; /* 枠線（必要に応じて削除可能） */
+            border-radius: 15px; /* 外枠の角丸 */
+            overflow: hidden; /* 子要素を角丸に合わせて切り取る */
+        }
 
+        #map-container {
+            width: 100%;
+            height: 100%;
+            border-radius: inherit; /* 外枠の角丸を継承 */
+            overflow: hidden; /* 子要素を角丸に合わせて切り取る */
+        }
+
+        #map-close {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            z-index: 10000; /* 地図の上に表示 */
+            background: white;
+            color: black;
+            padding: 10px;
+            border-radius: 5px;
+            font-size: 14px;
+            cursor: pointer;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+        }
+
+        #map-close:hover {
+            background: #f0f0f0;
+        }
 
         html {
             overflow-y: scroll;
@@ -387,6 +426,7 @@
     <div class="menu-buttons">
         <button id="fileUpload" onclick="fileUpload()"><i class="fa-solid fa-file-arrow-down"></i></button>       
         <button id="toggle-theme" onclick="toggleTheme()"><i class="fa fa-adjust"></i></button>
+        <button id="mapping" onclick="mapping()"><i class="fa-solid fa-earth-americas"></i></button>
     </div>
     <input type="file" id="fileInput" accept=".xlsx, .xls" style="display: none;" />
 
@@ -409,10 +449,47 @@
         <div id="editor"></div>
     </div>
 
+    <div id="map">
+        <div id="map-close" onclick="mapping()">Close</div>
+        <div id="map-container"></div> <!-- 地図用コンテナを追加 -->
+    </div>
+
 
     <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
     <script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
     <script>
+
+function mapping() {
+    // マップコンテナを取得
+    const mapContainer = document.getElementById('map');
+
+    // 地図の表示/非表示を切り替え
+    if (mapContainer.style.display === 'block') {
+        mapContainer.style.display = 'none'; // 地図を非表示
+        return;
+    }
+
+    // 地図を表示
+    mapContainer.style.display = 'block';
+
+    // 地図が初期化済みなら処理を終了
+    if (window.myMap) return;
+
+    // MapTilerタイルレイヤーの設定
+    const mapTilerApiKey = 'Sv80uSRLZxFEwRiW17Cg';
+
+    // 地図を初期化
+    window.myMap = L.map('map-container').setView([35.6895, 139.6917], 12); // 東京タワー付近
+
+    // Street View タイルレイヤーを追加
+    const streetLayer = L.tileLayer(`https://api.maptiler.com/maps/basic/{z}/{x}/{y}.png?key=${mapTilerApiKey}`, {
+        attribution: '&copy; <a href="https://www.maptiler.com/copyright/">MapTiler</a> &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+        maxZoom: 18
+    });
+
+    streetLayer.addTo(window.myMap);
+}
 
         const quill = new Quill('#editor', {
             theme: 'snow',
