@@ -408,17 +408,25 @@
             top: 10px;
             right: 10px;
             z-index: 10000;
-            background: white;
-            color: black;
-            padding: 10px;
-            border-radius: 5px;
-            font-size: 14px;
+            background: transparent; /* 背景を透明に */
+            padding: 1px;
+            border-radius: 50%; /* 円形に調整 */
             cursor: pointer;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px; /* ボタンの幅 */
+            height: 40px; /* ボタンの高さ */
+        }
+
+        #map-close img {
+            width: 100%; /* 画像をボタン内にフィット */
+            height: auto;
+            display: block;
         }
 
         #map-close:hover {
-            background: #f0f0f0;
+            background: rgba(0, 0, 0, 0.1); /* ホバー時に軽く背景をつける */
         }
 
         html {
@@ -459,8 +467,10 @@
     </div>
 
     <div id="map">
-        <div id="map-close" onclick="mapping()">Close</div>
-        <div id="map-container"></div> <!-- 地図用コンテナを追加 -->
+        <div id="map-close" onclick="mapping()">
+            <img src="https://img.icons8.com/?size=100&id=N6MjBhBaEOTN&format=png&color=000000"/>
+        </div>
+        <div id="map-container"></div>
     </div>
 
 
@@ -488,7 +498,7 @@
             const mapTilerApiKey = 'Sv80uSRLZxFEwRiW17Cg';
 
             // 地図を初期化
-            window.myMap = L.map('map-container').setView([35.6895, 139.6917], 12);
+            window.myMap = L.map('map-container').setView([21.03966820428092, 105.86461819490408], 12);
 
             // Street View タイルレイヤーを追加
             const streetLayer = L.tileLayer(`https://api.maptiler.com/maps/basic/{z}/{x}/{y}.png?key=${mapTilerApiKey}`, {
@@ -498,6 +508,11 @@
 
             streetLayer.addTo(window.myMap);
         }
+
+
+        
+
+
 
         const quill = new Quill('#editor', {
             theme: 'snow',
@@ -596,9 +611,6 @@
                 // 開始日と終了日の取得
                 const startDate = parseExcelDate(json[0]["Start"]);
                 const endDate = parseExcelDate(json[0]["End"]);
-
-                console.log("Start Date:", startDate.toDateString());
-                console.log("End Date:", endDate.toDateString());
 
                 // カレンダー生成
                 generateCalendar(startDate, endDate);
