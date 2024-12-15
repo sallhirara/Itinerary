@@ -7,7 +7,6 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link rel="stylesheet" href="https://cdn.quilljs.com/1.3.6/quill.snow.css">
     <link rel="stylesheet" href="https://cdn.quilljs.com/1.3.6/quill.bubble.css">  
-    <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
     
     <style>
         * {
@@ -93,6 +92,58 @@
         .menu-buttons button:hover {
             background-color: hsl(var(--hue),10%,50%);
         }
+      
+
+        #calendar-container {
+          display: none;
+          taxt-align: center;
+          margin: 40px;
+        }
+      
+      
+#calendar {
+    display: table; /* デフォルトのテーブル表示 */
+    width: 100%; /* 全体の幅を占める */
+    max-width: 500px; /* 必要に応じて最大幅を設定 */
+    margin: 2px auto; /* 中央揃え */
+    text-align: center; /* テキスト中央揃え */
+}
+
+#calendar th, #calendar td {
+    padding: 0 10px; /* セル内の余白 */
+    box-sizing: border-box; /* ボックスサイズにパディングを含む */
+    width: 14.2857%; /* 1週間分を均等に分割 */
+}
+
+#calendar th {
+    font-weight: bold; /* 曜日ヘッダーを太字 */
+    color: var(--fg); /* テキスト色 */
+}
+
+#calendar td {
+    width: 14.2857%; /* 1週間分を均等に分割 */
+    height: 40px; /* 縦横を揃えて正方形に近づける */
+    padding: 0; /* 内側の余白をなくす */
+    box-sizing: border-box; /* パディングを含むサイズ指定 */
+    background-color: var(--bg); /* 背景色 */
+    color: var(--fg); /* テキスト色 */
+    text-align: center; /* テキストを中央揃え */
+    vertical-align: middle; /* 垂直方向の中央揃え */
+}
+
+#calendar td.highlight {
+    border: 2px solid var(--primary-color); /* 強調枠線 */
+    border-radius: 50%; /* 完全な円にする */
+    width: 40px; /* ハイライトセルの幅を固定 */
+    height: 40px; /* ハイライトセルの高さを固定 */
+    margin: auto; /* セル内で中央に配置 */
+    display: inline-flex; /* フレックスで中央揃え */
+    align-items: center; /* 垂直方向の中央揃え */
+    justify-content: center; /* 水平方向の中央揃え */
+    font-weight: bold; /* 太字 */
+    background-color: var(--secondary-color); /* オプション：背景色を変更 */
+}
+      
 
         .timeline {
             background-color: transparent;
@@ -349,6 +400,10 @@
     </div>
     <input type="file" id="fileInput" accept=".xlsx, .xls" style="display: none;" />
 
+    <div id="calendar-container">
+        <div id="calendar"></div>
+    </div>
+  
     <div class="timeline" id="timeline"></div>
 
     <div class="note" type="text">N O T E</div>
@@ -365,10 +420,11 @@
     </div>
 
 
+    <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
     <script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
     <script>
 
-var quill = new Quill('#editor', {
+        const quill = new Quill('#editor', {
             theme: 'snow',
             bounds: '#editor',
             modules: {
@@ -443,7 +499,78 @@ var quill = new Quill('#editor', {
                 fileNameElement.textContent = `Selected file: ${file.name}`; // ファイル名を設定
             }
         });
+      
 
+      
+// ファイル選択イベントリスナー
+document.getElementById("fileInput").addEventListener("change", handleFile);
+
+function handleFile(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = function (e) {
+        const data = new Uint8Array(e.target.result);
+        const workbook = XLSX.read(data, { type: "array" });
+        const sheetName = workbook.SheetNames[0];
+        const sheet = workbook.Sheets[sheetName];
+        const json = XLSX.utils.sheet_to_json(sheet);
+
+        // 開始日と終StEnd
+        const startDate = new Date(json[0]["Start"]);
+        const endDate = new Date(json[0]["End"]);
+        generateCalendar(startDate, endDate);
+    };
+    reader.readAsArrayBuffer(file);
+}
+
+function generateCalendar(startDate, endDate) {
+    const container = document.getElementById("calendar-container");
+    const table = document.getElementById("calendar");
+
+    // カレンダーを初期化
+    table.innerHTML = "";
+
+    // 曜日ヘッダー
+    const headerRow = document.createElement("tr");
+    ["S", "M", "T", "W", "T", "F", "S"].forEach(day => {
+        const th = document.createElement("th");
+        th.textContent = day;
+        headerRow.appendChild(th);
+    });
+    table.appendChild(headerRow);
+
+    // カレンダー作成
+    const start = new Date(startDate);
+    start.setDate(start.getDate() - start.getDay() - 7); // 開始日の前の週
+    const end = new Date(endDate);
+    end.setDate(end.getDate() + (end.getDay()) + 7); // 終了日の次の週
+
+    let currentDate = new Date(start);
+    while (currentDate <= end) {
+        const row = document.createElement("tr");
+        for (let i = 0; i < 7; i++) {
+            const cell = document.createElement("td");
+            cell.textContent = currentDate.getDate();
+
+            // 丸で囲む設定
+            if (currentDate >= startDate && currentDate <= endDate) {
+                cell.classList.add("highlight");
+            }
+
+            row.appendChild(cell);
+            currentDate.setDate(currentDate.getDate() + 1);
+        }
+        table.appendChild(row);
+    }
+
+    // カレンダーを表示
+    container.style.display = "block";
+}
+      
+      
+      
         function fileUpload() {
             document.getElementById('fileInput').click();
         }
