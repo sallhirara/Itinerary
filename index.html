@@ -673,11 +673,17 @@
 
             // 地図を初期化
             window.myMap = L.map('map-container', { zoomControl: false }).setView([21.03966820428092, 105.86461819490408], 12);
+          
+            window.myMap.invalidateSize(); // 地図サイズを再計算
+
 
             // Street View タイルレイヤーを追加
             const streetLayer = L.tileLayer(`https://api.maptiler.com/maps/basic/{z}/{x}/{y}.png?key=${mapTilerApiKey}`, {
                 attribution: '&copy; <a href="https://www.maptiler.com/copyright/">MapTiler</a> &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-                maxZoom: 18
+                maxZoom: 18,
+                minZoom: 1,
+                updateWhenIdle: true, // 地図移動中はタイルを読み込まない
+                keepBuffer: 5 // 画面外のタイルも先に読み込む
             });
             streetLayer.addTo(window.myMap);
 
