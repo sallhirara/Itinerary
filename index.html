@@ -430,6 +430,48 @@
             background: rgba(0, 0, 0, 0.1); /* ホバー時に軽く背景をつける */
         }
 
+        #togglePositionButton {
+            background: none;
+            border: none; /* 枠線 */
+            padding: 0px; /* 小さな内側の余白 */
+            width: 30px; /* ボタンの幅 */
+            height: 30px; /* ボタンの高さ */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 16px; /* アイコンのサイズ */
+            cursor: pointer;
+        }
+
+        #togglePositionButton i {
+            font-size: 14px; /* アイコンをさらに小さくする */
+        }
+      
+      
+        .zoom-control-container {
+            position: fixed; /* 画面全体に対する配置を固定 */
+            bottom: 20px;    /* 下からの距離 */
+            right: 12px;     /* 初期設定は右下 */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            z-index: 1000;   /* 他の要素より上に表示 */
+            gap: 10px;       /* 子要素間の間隔 */
+        }
+
+        .zoom-control-container button {
+            color: #333;
+            opacity: 0.5;
+            border-radius: 50%;
+            background-color: none;
+        }
+
+        .zoom-control-container button:hover {
+            transform: scale(1.1);
+        }      
+      
+      
+      
         footer {
             position: sticky;
             top: 100vh;
@@ -630,16 +672,85 @@
             const mapTilerApiKey = 'Sv80uSRLZxFEwRiW17Cg';
 
             // 地図を初期化
-            window.myMap = L.map('map-container').setView([21.03966820428092, 105.86461819490408], 12);
+            window.myMap = L.map('map-container', { zoomControl: false }).setView([21.03966820428092, 105.86461819490408], 12);
 
             // Street View タイルレイヤーを追加
             const streetLayer = L.tileLayer(`https://api.maptiler.com/maps/basic/{z}/{x}/{y}.png?key=${mapTilerApiKey}`, {
                 attribution: '&copy; <a href="https://www.maptiler.com/copyright/">MapTiler</a> &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
                 maxZoom: 18
             });
-
             streetLayer.addTo(window.myMap);
+
+            // カスタムズームボタンを右下に配置
+            let isBottomRight = true;
+
+            const zoomControlContainer = L.control({ position: 'bottomright' });
+            zoomControlContainer.onAdd = function () {
+                const div = L.DomUtil.create('div', 'zoom-control-container');
+                div.innerHTML = `
+                    <button id="togglePositionButton" style="margin-bottom: 10px;">
+                        <i class="fa-solid fa-angles-left"></i>
+                    </button>
+                    <div style="display: flex; flex-direction: column; align-items: center; gap: 10px;">
+                        <button id="zoomInIcon" style="background: none; border: none; cursor: pointer; font-size: 24px;">
+                            <i class="fa-solid fa-circle-plus"></i>
+                        </button>
+                        <button id="zoomOutIcon" style="background: none; border: none; cursor: pointer; font-size: 24px;">
+                            <i class="fa-solid fa-circle-minus"></i>
+                        </button>
+                    </div>
+                `;
+
+                // 位置切り替えボタンの動作
+                div.querySelector('#togglePositionButton').addEventListener('click', () => {
+                    const container = document.querySelector('.zoom-control-container');
+                    const toggleIcon = document.querySelector('#togglePositionButton i');
+
+                    // 確実に画面下に配置
+                    container.style.position = 'fixed';
+                    container.style.bottom = '20px';
+                    if (isBottomRight) {
+                        container.style.left = '25px';
+                        container.style.right = 'auto';
+                        toggleIcon.className = 'fa-solid fa-angles-right';
+                    } else {
+                        container.style.right = '12px';
+                        container.style.left = 'auto';
+                        toggleIcon.className = 'fa-solid fa-angles-left';
+                    }
+                    isBottomRight = !isBottomRight;
+                });
+
+                return div;
+            };
+
+            zoomControlContainer.addTo(window.myMap);
+
+            // ズームインイベント（スムーズ）
+            document.getElementById('zoomInIcon').addEventListener('click', function () {
+                window.myMap.flyTo(window.myMap.getCenter(), window.myMap.getZoom() + 1, { animate: true, duration: 0.7 });
+            });
+
+            // ズームアウトイベント（スムーズ）
+            document.getElementById('zoomOutIcon').addEventListener('click', function () {
+                window.myMap.flyTo(window.myMap.getCenter(), window.myMap.getZoom() - 1, { animate: true, duration: 0.7 });
+            });
+
+            // ダブルクリックズームを無効化
+            window.myMap.doubleClickZoom.disable();
+
+            // ダブルクリックされた場所を地図の中心にスムーズに移動
+            window.myMap.on('dblclick', function (e) {
+                const latlng = e.latlng; // ダブルクリックされた位置の緯度経度
+
+                // アニメーション付きで移動
+                window.myMap.flyTo(latlng, window.myMap.getZoom(), {
+                    animate: true,
+                    duration: 0.7 // アニメーションの持続時間（秒）
+                });
+            });
         }
+
 
 
         
