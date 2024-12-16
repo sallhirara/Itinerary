@@ -764,16 +764,6 @@
             document.getElementById('fileInput').click();
         }
 
-        // ファイル選択イベントのリスナーを設定
-        document.getElementById('fileInput').addEventListener('change', (event) => {
-            const file = event.target.files[0]; // 選択されたファイル
-            if (file) {
-                const fileNameElement = document.getElementById('fileName'); // ファイル名表示用の要素
-                fileNameElement.textContent = `Selected file: ${file.name}`; // ファイル名を設定
-            }
-        });
-      
-
       
         document.getElementById("fileInput").addEventListener("change", handleFile);
 
@@ -980,6 +970,11 @@
 
         document.getElementById('fileInput').addEventListener('change', (event) => {
             const file = event.target.files[0];
+            if (file) {
+                const fileNameElement = document.getElementById('fileName'); // ファイル名表示用の要素
+                fileNameElement.textContent = `Selected file: ${file.name}`; // ファイル名を設定
+            }          
+          
             if (!file) return;
 
             const reader = new FileReader();
