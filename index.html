@@ -468,11 +468,12 @@
     <div class="note" type="text">N O T E</div>
 
     <div class="btn-group">
-        <button class="btn" type="button" date-action=""><i class="fa fa-save"></i></button>
-        <button class="btn" type="button" date-action=""><i class="fa-solid fa-rotate-left"></i></button>
-        <button class="btn" type="button" date-action=""><i class="fa-solid fa-rotate-right"></i></button>
-        <button class="btn" type="button" date-action=""><i class="fa-regular fa-trash-can"></i></button>
+        <button class="btn" id="save-btn" type="button"><i class="fa fa-save"></i></button>
+        <button class="btn" id="undo-btn" type="button"><i class="fa-solid fa-rotate-left"></i></button>
+        <button class="btn" id="redo-btn" type="button"><i class="fa-solid fa-rotate-right"></i></button>
+        <button class="btn" id="delete-btn" type="button"><i class="fa-regular fa-trash-can"></i></button>
     </div>
+
 
     <div id="editor-container">
         <div id="editor"></div>
@@ -495,41 +496,13 @@
     <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
     <script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
     <script>
-
-        function mapping() {
-            const mapContainer = document.getElementById('map');
-
-            // 地図の表示/非表示を切り替え
-            if (mapContainer.classList.contains('show')) {
-                mapContainer.classList.remove('show');
-                setTimeout(() => (mapContainer.style.display = 'none'), 300); // アニメーション後に非表示
-                return;
-            }
-
-            mapContainer.style.display = 'block';
-            setTimeout(() => mapContainer.classList.add('show'), 10); // 小さな遅延を入れてクラスを追加
-
-            // 地図が初期化済みなら処理を終了
-            if (window.myMap) return;
-
-            const mapTilerApiKey = 'Sv80uSRLZxFEwRiW17Cg';
-
-            // 地図を初期化
-            window.myMap = L.map('map-container').setView([21.03966820428092, 105.86461819490408], 12);
-
-            // Street View タイルレイヤーを追加
-            const streetLayer = L.tileLayer(`https://api.maptiler.com/maps/basic/{z}/{x}/{y}.png?key=${mapTilerApiKey}`, {
-                attribution: '&copy; <a href="https://www.maptiler.com/copyright/">MapTiler</a> &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-                maxZoom: 18
-            });
-
-            streetLayer.addTo(window.myMap);
-        }
-
-
-        
-
-
+        // 初期テーマ設定
+        document.addEventListener('DOMContentLoaded', () => {
+            const html = document.documentElement; // <html>要素を取得
+            html.classList.add('dark-theme'); // 初期テーマをダークモードに設定
+        });
+      
+      
 
         const quill = new Quill('#editor', {
             theme: 'snow',
@@ -590,6 +563,88 @@
                 popup.style.display = 'none'; // 選択が解除されたら非表示
             }
         });
+      
+      
+
+        // 初期ロード時にローカルストレージからデータを復元
+        window.addEventListener('load', function () {
+            const savedContent = localStorage.getItem('editorContent');
+            if (savedContent) {
+                quill.setContents(JSON.parse(savedContent)); // ローカルストレージから復元
+                console.log('Editor content restored:', JSON.parse(savedContent));
+            } else {
+                console.log('No data to restore.');
+            }
+        });
+
+        // 保存処理
+        document.getElementById('save-btn').addEventListener('click', function () {
+            const content = quill.getContents(); // エディタの内容を取得
+            localStorage.setItem('editorContent', JSON.stringify(content)); // ローカルストレージに保存
+            alert('Editor content saved successfully!');
+        });
+
+        // アンドゥ処理
+        document.getElementById('undo-btn').addEventListener('click', function () {
+            quill.history.undo(); // エディタの元に戻す機能
+            alert('Undo action performed!');
+        });
+
+        // リドゥ処理
+        document.getElementById('redo-btn').addEventListener('click', function () {
+            quill.history.redo(); // エディタのやり直し機能
+            alert('Redo action performed!');
+        });
+
+        // 削除処理
+        document.getElementById('delete-btn').addEventListener('click', function () {
+            const confirmDelete = confirm('Are you sure you want to delete the content?');
+            if (confirmDelete) {
+                quill.setContents([]); // エディタの内容をクリア
+                localStorage.removeItem('editorContent'); // ローカルストレージからも削除
+                alert('Content deleted successfully!');
+            }
+        });   
+
+      
+      
+      
+      
+      
+        function mapping() {
+            const mapContainer = document.getElementById('map');
+
+            // 地図の表示/非表示を切り替え
+            if (mapContainer.classList.contains('show')) {
+                mapContainer.classList.remove('show');
+                setTimeout(() => (mapContainer.style.display = 'none'), 300); // アニメーション後に非表示
+                return;
+            }
+
+            mapContainer.style.display = 'block';
+            setTimeout(() => mapContainer.classList.add('show'), 10); // 小さな遅延を入れてクラスを追加
+
+            // 地図が初期化済みなら処理を終了
+            if (window.myMap) return;
+
+            const mapTilerApiKey = 'Sv80uSRLZxFEwRiW17Cg';
+
+            // 地図を初期化
+            window.myMap = L.map('map-container').setView([21.03966820428092, 105.86461819490408], 12);
+
+            // Street View タイルレイヤーを追加
+            const streetLayer = L.tileLayer(`https://api.maptiler.com/maps/basic/{z}/{x}/{y}.png?key=${mapTilerApiKey}`, {
+                attribution: '&copy; <a href="https://www.maptiler.com/copyright/">MapTiler</a> &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+                maxZoom: 18
+            });
+
+            streetLayer.addTo(window.myMap);
+        }
+
+
+        
+
+
 
 
 
@@ -705,16 +760,7 @@
             container.style.display = "block";
         }
 
-      
-        function fileUpload() {
-            document.getElementById('fileInput').click();
-        }
 
-        // 初期テーマ設定
-        document.addEventListener('DOMContentLoaded', () => {
-            const html = document.documentElement; // <html>要素を取得
-            html.classList.add('dark-theme'); // 初期テーマをダークモードに設定
-        });
     
 
       
@@ -934,7 +980,7 @@
 
 
 
-    
+ 
 
         
         function handleOrientationChange() {
