@@ -652,40 +652,162 @@
       
       
       
+
+        
+
+
+
+
+
+        // ファイル選択ダイアログを表示
+        function fileUpload() {
+            document.getElementById('fileInput').click();
+        }
+
+      
+        document.getElementById("fileInput").addEventListener("change", handleFile);
+
+        function handleFile(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                const data = new Uint8Array(e.target.result);
+                const workbook = XLSX.read(data, { type: "array" });
+                const sheetName = "Timeline";
+                const sheet = workbook.Sheets[sheetName];
+
+
+                // D2 (中心座標) の取得
+                const centerValue = sheet["D2"] ? sheet["D2"].v : null;
+                if (centerValue) {
+                    const [lat, lng] = centerValue.split(",").map(Number); // 緯度・経度を分割
+                    mapCenter = [lat, lng]; // 中心座標を更新
+                }
+
+                // E2 (ズームスケール) の取得
+                const zoomValue = sheet["E2"] ? parseInt(sheet["E2"].v, 10) : null;
+                if (zoomValue) {
+                    zoomScale = zoomValue; // ズームスケールを更新
+                }
+
+
+
+                // 開始日と終了日の取得
+                const startDate = parseExcelDate(sheet["B2"].v);
+                const endDate = parseExcelDate(sheet["C2"].v);
+
+                // カレンダー生成
+                generateCalendar(startDate, endDate);
+
+
+                
+
+            };
+            reader.readAsArrayBuffer(file);
+        }
+
+        function parseExcelDate(value) {
+            if (typeof value === "number") {
+                return convertExcelDate(value);
+            }
+            return new Date(value);
+        }
+
+        function convertExcelDate(excelDate) {
+            const baseDate = new Date(1900, 0, 1);
+            const offset = excelDate - 2; // Excelのシリアル値補正
+            return new Date(baseDate.getTime() + offset * 24 * 60 * 60 * 1000);
+        }
+
+        function generateCalendar(startDate, endDate) {
+            const container = document.getElementById("calendar-container");
+            const table = document.getElementById("calendar");
+
+            // カレンダーを初期化
+            table.innerHTML = "";
+
+            // 曜日ヘッダーを作成
+            const headerRow = document.createElement("tr");
+            ["S", "M", "T", "W", "T", "F", "S"].forEach(day => {
+                const th = document.createElement("th");
+                th.textContent = day;
+                headerRow.appendChild(th);
+            });
+            table.appendChild(headerRow);
+
+            // 開始日と終了日を基にカレンダー範囲を計算
+            const start = new Date(startDate);
+            start.setDate(start.getDate() - start.getDay() - 7); // 開始日の前の週
+            const end = new Date(endDate);
+            end.setDate(end.getDate() + (6 - end.getDay()) + 7); // 終了日の次の週
+
+            let currentDate = new Date(start);
+            while (currentDate <= end) {
+                const row = document.createElement("tr");
+                for (let i = 0; i < 7; i++) {
+                    const cell = document.createElement("td");
+
+                    if (currentDate >= startDate && currentDate <= endDate) {
+                        cell.classList.add("highlight");
+                    }
+
+                    // セルに日付を設定
+                    cell.textContent = currentDate.getDate();
+                    row.appendChild(cell);
+
+                    // 日付を1日進める
+                    currentDate.setDate(currentDate.getDate() + 1);
+                }
+                table.appendChild(row);
+            }
+
+            // カレンダーを表示
+            container.style.display = "block";
+        }
+
+        let mapCenter = [21.03966820428092, 105.86461819490408]; // デフォルトの中心
+        let zoomScale = 12; // デフォルトのズームスケール
       
         function mapping() {
-            const mapContainer = document.getElementById('map');
+            const mapContainer = document.getElementById("map");
 
             // 地図の表示/非表示を切り替え
-            if (mapContainer.classList.contains('show')) {
-                mapContainer.classList.remove('show');
-                setTimeout(() => (mapContainer.style.display = 'none'), 300); // アニメーション後に非表示
+            if (mapContainer.classList.contains("show")) {
+                mapContainer.classList.remove("show");
+                setTimeout(() => (mapContainer.style.display = "none"), 300); // アニメーション後に非表示
                 return;
             }
 
-            mapContainer.style.display = 'block';
-            setTimeout(() => mapContainer.classList.add('show'), 10); // 小さな遅延を入れてクラスを追加
+            mapContainer.style.display = "block";
+            setTimeout(() => mapContainer.classList.add("show"), 10); // 小さな遅延を入れてクラスを追加
 
             // 地図が初期化済みなら処理を終了
-            if (window.myMap) return;
+            if (window.myMap) {
+                window.myMap.setView(mapCenter, zoomScale); // 中心位置とズームを更新
+                return;
+            }
 
-            const mapTilerApiKey = 'Sv80uSRLZxFEwRiW17Cg';
+            const mapTilerApiKey = "Sv80uSRLZxFEwRiW17Cg";
 
             // 地図を初期化
-            window.myMap = L.map('map-container', { zoomControl: false }).setView([21.03966820428092, 105.86461819490408], 12);
-          
-            window.myMap.invalidateSize(); // 地図サイズを再計算
+            window.myMap = L.map("map-container", { zoomControl: false }).setView(mapCenter, zoomScale);
 
+            // 地図サイズを再計算
+            window.myMap.invalidateSize();
 
-            // Street View タイルレイヤーを追加
+            // タイルレイヤーを追加
             const streetLayer = L.tileLayer(`https://api.maptiler.com/maps/basic/{z}/{x}/{y}.png?key=${mapTilerApiKey}`, {
                 attribution: '&copy; <a href="https://www.maptiler.com/copyright/">MapTiler</a> &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
                 maxZoom: 18,
                 minZoom: 1,
-                updateWhenIdle: true, // 地図移動中はタイルを読み込まない
-                keepBuffer: 5 // 画面外のタイルも先に読み込む
+                updateWhenIdle: true,
+                keepBuffer: 5
             });
             streetLayer.addTo(window.myMap);
+
+
 
             // カスタムズームボタンを右下に配置
             let isBottomRight = true;
@@ -755,102 +877,6 @@
                     duration: 0.7 // アニメーションの持続時間（秒）
                 });
             });
-        }
-
-
-
-        
-
-
-
-
-
-        // ファイル選択ダイアログを表示
-        function fileUpload() {
-            document.getElementById('fileInput').click();
-        }
-
-      
-        document.getElementById("fileInput").addEventListener("change", handleFile);
-
-        function handleFile(event) {
-            const file = event.target.files[0];
-            if (!file) return;
-
-            const reader = new FileReader();
-            reader.onload = function (e) {
-                const data = new Uint8Array(e.target.result);
-                const workbook = XLSX.read(data, { type: "array" });
-                const sheetName = "Timeline";
-                const sheet = workbook.Sheets[sheetName];
-
-                // 開始日と終了日の取得
-                const startDate = parseExcelDate(sheet["B2"].v);
-                const endDate = parseExcelDate(sheet["C2"].v);
-
-                // カレンダー生成
-                generateCalendar(startDate, endDate);
-            };
-            reader.readAsArrayBuffer(file);
-        }
-
-        function parseExcelDate(value) {
-            if (typeof value === "number") {
-                return convertExcelDate(value);
-            }
-            return new Date(value);
-        }
-
-        function convertExcelDate(excelDate) {
-            const baseDate = new Date(1900, 0, 1);
-            const offset = excelDate - 2; // Excelのシリアル値補正
-            return new Date(baseDate.getTime() + offset * 24 * 60 * 60 * 1000);
-        }
-
-        function generateCalendar(startDate, endDate) {
-            const container = document.getElementById("calendar-container");
-            const table = document.getElementById("calendar");
-
-            // カレンダーを初期化
-            table.innerHTML = "";
-
-            // 曜日ヘッダーを作成
-            const headerRow = document.createElement("tr");
-            ["S", "M", "T", "W", "T", "F", "S"].forEach(day => {
-                const th = document.createElement("th");
-                th.textContent = day;
-                headerRow.appendChild(th);
-            });
-            table.appendChild(headerRow);
-
-            // 開始日と終了日を基にカレンダー範囲を計算
-            const start = new Date(startDate);
-            start.setDate(start.getDate() - start.getDay() - 7); // 開始日の前の週
-            const end = new Date(endDate);
-            end.setDate(end.getDate() + (6 - end.getDay()) + 7); // 終了日の次の週
-
-            let currentDate = new Date(start);
-            while (currentDate <= end) {
-                const row = document.createElement("tr");
-                for (let i = 0; i < 7; i++) {
-                    const cell = document.createElement("td");
-
-                    if (currentDate >= startDate && currentDate <= endDate) {
-                        cell.classList.add("highlight");
-                    }
-
-                    // セルに日付を設定
-                    cell.textContent = currentDate.getDate();
-                    row.appendChild(cell);
-
-                    // 日付を1日進める
-                    currentDate.setDate(currentDate.getDate() + 1);
-                }
-                table.appendChild(row);
-            }
-
-            // カレンダーを表示
-            container.style.display = "block";
         }
 
 
