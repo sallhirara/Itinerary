@@ -781,15 +781,12 @@
             reader.onload = function (e) {
                 const data = new Uint8Array(e.target.result);
                 const workbook = XLSX.read(data, { type: "array" });
-                const sheetName = workbook.SheetNames[0];
+                const sheetName = "Timeline";
                 const sheet = workbook.Sheets[sheetName];
-                const json = XLSX.utils.sheet_to_json(sheet);
-
-                console.log("Excel Data:", json); // データ確認用
 
                 // 開始日と終了日の取得
-                const startDate = parseExcelDate(json[0]["Start"]);
-                const endDate = parseExcelDate(json[0]["End"]);
+                const startDate = parseExcelDate(sheet["B2"].v);
+                const endDate = parseExcelDate(sheet["C2"].v);
 
                 // カレンダー生成
                 generateCalendar(startDate, endDate);
@@ -799,15 +796,9 @@
 
         function parseExcelDate(value) {
             if (typeof value === "number") {
-                // Excelシリアル値を日付に変換
                 return convertExcelDate(value);
-            } else if (typeof value === "string") {
-                // 文字列としての日付をパース
-                return new Date(Date.parse(value));
-            } else {
-                console.error("Invalid date format:", value);
-                return new Date(0); // デフォルト値として1970年1月1日
             }
+            return new Date(value);
         }
 
         function convertExcelDate(excelDate) {
@@ -857,11 +848,6 @@
                 }
                 table.appendChild(row);
             }
-
-            console.log({
-                currentDate: currentDate.toDateString(),
-                isHighlighted: currentDate >= startDate && currentDate <= endDate
-            });
 
             // カレンダーを表示
             container.style.display = "block";
