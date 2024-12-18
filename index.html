@@ -680,15 +680,15 @@
                 const sheet = workbook.Sheets[sheetName];
 
 
-                // D2 (中心座標) の取得
-                const centerValue = sheet["D2"] ? sheet["D2"].v : null;
+                // C9 (中心座標) の取得
+                const centerValue = sheet["C9"] ? sheet["C9"].v : null;
                 if (centerValue) {
                     const [lat, lng] = centerValue.split(",").map(Number); // 緯度・経度を分割
                     mapCenter = [lat, lng]; // 中心座標を更新
                 }
 
-                // E2 (ズームスケール) の取得
-                const zoomValue = sheet["E2"] ? parseInt(sheet["E2"].v, 10) : null;
+                // C10 (ズームスケール) の取得
+                const zoomValue = sheet["C10"] ? parseInt(sheet["C10"].v, 10) : null;
                 if (zoomValue) {
                     zoomScale = zoomValue; // ズームスケールを更新
                 }
@@ -696,8 +696,8 @@
 
 
                 // 開始日と終了日の取得
-                const startDate = parseExcelDate(sheet["B2"].v);
-                const endDate = parseExcelDate(sheet["C2"].v);
+                const startDate = parseExcelDate(sheet["C3"].v);
+                const endDate = parseExcelDate(sheet["C4"].v);
 
                 // カレンダー生成
                 generateCalendar(startDate, endDate);
