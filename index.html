@@ -768,45 +768,138 @@
             container.style.display = "block";
         }
 
+
+
+
+
+
+
+        // カテゴリごとのアイコン設定
+        const categoryIcons = {
+            "Airport": L.icon({
+                iconUrl: "https://cdn-icons-png.flaticon.com/512/684/684908.png", // 飛行機アイコン
+                iconSize: [30, 30], // アイコンのサイズ
+            }),
+            "Hotel": L.icon({
+                iconUrl: "https://cdn-icons-png.flaticon.com/512/2942/2942759.png", // ホテルアイコン
+                iconSize: [30, 30],
+            }),
+            "Restaurant": L.icon({
+                iconUrl: "https://cdn-icons-png.flaticon.com/512/3075/3075977.png", // レストランアイコン
+                iconSize: [30, 30],
+            }),
+            // デフォルトアイコン
+            "default": L.icon({
+                iconUrl: "https://cdn-icons-png.flaticon.com/512/847/847969.png", // 汎用アイコン
+                iconSize: [30, 30],
+            }),
+        };
+
+        // カテゴリごとのポリゴン色設定
+        const categoryColors = {
+            "Residential": { color: "green", fillColor: "rgba(0, 255, 0, 0.3)" },
+            "Commercial": { color: "blue", fillColor: "rgba(0, 0, 255, 0.3)" },
+            "Industrial": { color: "red", fillColor: "rgba(255, 0, 0, 0.3)" },
+            "default": { color: "gray", fillColor: "rgba(128, 128, 128, 0.3)" }
+        };
+
+        // マーカーとポリゴンを追加する関数
+        function addMarkersAndPolygonsToMap() {
+            if (!window.markerData) return; // データがない場合は終了
+
+            window.markerData.forEach(({ Coords, Title, Time, Category, Area }) => {
+                // マーカーの処理
+                if (Coords) {
+                    const [lat, lng] = Coords.split(",").map(Number);
+                    const title = Title || "No Title";
+                    const time = Time || "No Time";
+                    const category = Category || "default";
+
+                    const icon = categoryIcons[category] || categoryIcons["default"];
+
+                    L.marker([lat, lng], { icon: icon })
+                        .addTo(window.myMap)
+                        .bindPopup(`<b>${title}</b><br>Time: ${time}<br>Category: ${category}`);
+                }
+
+                // ポリゴンの処理
+                if (Area) {
+                    try {
+                        const polygonCoords = JSON.parse(Area); // JSON形式の座標を解析
+                        const { color, fillColor } = categoryColors[Category] || categoryColors["default"];
+
+                        L.polygon(polygonCoords, {
+                            color: color,
+                            fillColor: fillColor,
+                            weight: 2,
+                        }).addTo(window.myMap).bindPopup(`<b>${Category} Area</b>`);
+                    } catch (error) {
+                        console.error("Invalid Area format:", Area, error);
+                    }
+                }
+            });
+        }
+
+        // Excelファイルからデータを読み取る
+        document.getElementById("fileInput").addEventListener("change", (event) => {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const data = new Uint8Array(e.target.result);
+                const workbook = XLSX.read(data, { type: "array" });
+
+                const sheet = workbook.Sheets["Timeline"];
+                const sheetData = XLSX.utils.sheet_to_json(sheet);
+
+                window.markerData = sheetData;
+
+                if (window.myMap) {
+                    addMarkersAndPolygonsToMap();
+                }
+            };
+            reader.readAsArrayBuffer(file);
+        });
+                
+
         let mapCenter = [21.03966820428092, 105.86461819490408]; // デフォルトの中心
         let zoomScale = 12; // デフォルトのズームスケール
-      
+
+        // 地図を初期化する `mapping` 関数内で、マーカーとポリゴンを追加
         function mapping() {
             const mapContainer = document.getElementById("map");
 
-            // 地図の表示/非表示を切り替え
             if (mapContainer.classList.contains("show")) {
                 mapContainer.classList.remove("show");
-                setTimeout(() => (mapContainer.style.display = "none"), 300); // アニメーション後に非表示
+                setTimeout(() => (mapContainer.style.display = "none"), 300);
                 return;
             }
 
             mapContainer.style.display = "block";
-            setTimeout(() => mapContainer.classList.add("show"), 10); // 小さな遅延を入れてクラスを追加
+            setTimeout(() => mapContainer.classList.add("show"), 10);
 
-            // 地図が初期化済みなら処理を終了
             if (window.myMap) {
-                window.myMap.setView(mapCenter, zoomScale); // 中心位置とズームを更新
+                window.myMap.setView(mapCenter, zoomScale);
+                addMarkersAndPolygonsToMap();
                 return;
             }
 
             const mapTilerApiKey = "Sv80uSRLZxFEwRiW17Cg";
 
-            // 地図を初期化
             window.myMap = L.map("map-container", { zoomControl: false }).setView(mapCenter, zoomScale);
 
-            // 地図サイズを再計算
             window.myMap.invalidateSize();
 
-            // タイルレイヤーを追加
-            const streetLayer = L.tileLayer(`https://api.maptiler.com/maps/basic/{z}/{x}/{y}.png?key=${mapTilerApiKey}`, {
-                attribution: '&copy; <a href="https://www.maptiler.com/copyright/">MapTiler</a> &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+            L.tileLayer(`https://api.maptiler.com/maps/basic/{z}/{x}/{y}.png?key=${mapTilerApiKey}`, {
+                attribution: '&copy; MapTiler &copy; OpenStreetMap contributors',
                 maxZoom: 18,
                 minZoom: 1,
                 updateWhenIdle: true,
                 keepBuffer: 5
-            });
-            streetLayer.addTo(window.myMap);
+            }).addTo(window.myMap);
+
+            addMarkersAndPolygonsToMap();
 
 
 
