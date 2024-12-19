@@ -717,7 +717,7 @@
         }
 
         function convertExcelDate(excelDate) {
-            const baseDate = new Date(1900, 0, 1);
+            const baseDate = new Date(Date.UTC(1900, 0, 1)); // UTC基準
             const offset = excelDate - 2; // Excelのシリアル値補正
             return new Date(baseDate.getTime() + offset * 24 * 60 * 60 * 1000);
         }
@@ -750,9 +750,13 @@
                 for (let i = 0; i < 7; i++) {
                     const cell = document.createElement("td");
 
-                    if (currentDate >= startDate && currentDate <= endDate) {
+                    if (
+                        currentDate.toISOString().split("T")[0] >= startDate.toISOString().split("T")[0] &&
+                        currentDate.toISOString().split("T")[0] <= endDate.toISOString().split("T")[0]
+                    ) {
                         cell.classList.add("highlight");
                     }
+
 
                     // セルに日付を設定
                     cell.textContent = currentDate.getDate();
@@ -774,32 +778,70 @@
 
 
 
+
         // カテゴリごとのアイコン設定
         const categoryIcons = {
             "Airport": L.icon({
-                iconUrl: "https://cdn-icons-png.flaticon.com/512/684/684908.png", // 飛行機アイコン
-                iconSize: [30, 30], // アイコンのサイズ
+                iconUrl: "https://cdn-icons-png.flaticon.com/512/684/684908.png",
+                iconSize: [30, 30],
             }),
             "Hotel": L.icon({
-                iconUrl: "https://cdn-icons-png.flaticon.com/512/2942/2942759.png", // ホテルアイコン
+                iconUrl: "https://cdn-icons-png.flaticon.com/512/2942/2942759.png",
                 iconSize: [30, 30],
             }),
             "Restaurant": L.icon({
-                iconUrl: "https://cdn-icons-png.flaticon.com/512/3075/3075977.png", // レストランアイコン
+                iconUrl: "https://cdn-icons-png.flaticon.com/512/3075/3075977.png",
                 iconSize: [30, 30],
             }),
+            "Cafe and Bar": L.icon({
+                iconUrl: "https://img.icons8.com/?size=100&id=GBQyQYse1K3a&format=png&color=000000",
+                iconSize: [30, 30],
+            }),          
+            "Shop": L.icon({
+                iconUrl: "https://cdn-icons-png.flaticon.com/512/3075/3075977.png",
+                iconSize: [30, 30],
+            }),
+            "Architect": L.icon({
+                iconUrl: "https://cdn-icons-png.flaticon.com/512/3075/3075977.png",
+                iconSize: [30, 30],
+            }),
+          
+          
+            // for Bussiness
+            "Primary": L.icon({
+                iconUrl: "https://img.icons8.com/?size=100&id=59830&format=png&color=4BAA8EA8",
+                iconSize: [15, 15],
+            }),
+            "Condominium": L.icon({
+                iconUrl: "https://img.icons8.com/?size=100&id=24801&format=png&color=FF2E1754",
+                iconSize: [15, 15],
+            }),
+            "Ecoba": L.icon({
+                iconUrl: "https://img.icons8.com/?size=100&id=59830&format=png&color=4BAA8EA8",
+                iconSize: [20, 20],
+            }),
+            "Haseko": L.icon({
+                iconUrl: "https://img.icons8.com/?size=100&id=uRRFz0DH6uYw&format=png&color=000000",
+                iconSize: [20, 20],
+            }),          
+          
             // デフォルトアイコン
             "default": L.icon({
-                iconUrl: "https://cdn-icons-png.flaticon.com/512/847/847969.png", // 汎用アイコン
-                iconSize: [30, 30],
+                iconUrl: "https://cdn-icons-png.flaticon.com/512/847/847969.png",
+                iconSize: [20, 20],
             }),
         };
 
         // カテゴリごとのポリゴン色設定
         const categoryColors = {
-            "Residential": { color: "green", fillColor: "rgba(0, 255, 0, 0.3)" },
-            "Commercial": { color: "blue", fillColor: "rgba(0, 0, 255, 0.3)" },
-            "Industrial": { color: "red", fillColor: "rgba(255, 0, 0, 0.3)" },
+            "Famous Zone": { fillColor: "rgba(0, 255, 0, 0.3)" },
+          
+            // For bussiness
+            "Residential": { fillColor: "rgba(0, 255, 0, 0.3)" },
+            "Commercial": { fillColor: "rgba(0, 0, 255, 0.3)" },
+            "Industrial": { fillColor: "rgba(255, 0, 0, 0.3)" },
+            "Area": { fillColor: 'gold' },
+            "PJ Site": { fillColor: '#FF0062A8' },
             "default": { color: "gray", fillColor: "rgba(128, 128, 128, 0.3)" }
         };
 
@@ -1064,8 +1106,8 @@
 
         // シリアル値を日付に変換する関数
         function convertExcelDate(excelDate) {
-            const baseDate = new Date(1900, 0, 1); // Excelの基準日 (1900-01-01)
-            const offset = excelDate - 1; // Excelのシリアル値は1から始まる
+            const baseDate = new Date(Date.UTC(1900, 0, 1)); // UTC基準 // Excelの基準日 (1900-01-01)
+            const offset = excelDate - 2; // Excelのシリアル値は1から始まる
             return new Date(baseDate.getTime() + offset * 24 * 60 * 60 * 1000);
         }
 
