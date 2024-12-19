@@ -1226,8 +1226,15 @@
                                                         <img src="https://img.icons8.com/?size=100&id=OVMSsCK0bAsj&format=png&color=000000" 
                                                          alt="Link1 icon" style="width: 20px; height: 20px;">
                                                     </a>` : ''}
-                            ${item['Link2'] ? `<a class="additional-link" href="${item['Link2']}" target="_blank">Link2</a>` : ''}
-                            ${item['Link3'] ? `<a class="additional-link" href="${item['Link3']}" target="_blank">Link3</a>` : ''}
+                            ${item['Link2'] ? `<a class="additional-link" href="${item['Link2']}" target="_blank">
+                                                        <img src="https://img.icons8.com/?size=100&id=OVMSsCK0bAsj&format=png&color=000000" 
+                                                         alt="Link2 icon" style="width: 20px; height: 20px;">
+                                                    </a>` : ''}
+                            
+                            ${item['Link3'] ? `<a class="additional-link" href="${item['Link3']}" target="_blank">
+                                                        <img src="https://img.icons8.com/?size=100&id=OVMSsCK0bAsj&format=png&color=000000" 
+                                                         alt="Link3 icon" style="width: 20px; height: 20px;">
+                                                    </a>` : ''}
                         `;
                         details.appendChild(div);
                     });
