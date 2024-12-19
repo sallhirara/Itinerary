@@ -807,19 +807,26 @@
         function addMarkersAndPolygonsToMap() {
             if (!window.markerData) return; // データがない場合は終了
 
-            window.markerData.forEach(({ Coords, Title, Time, Category, Area }) => {
+            window.markerData.forEach(({ Coords, Title, Time,Items, Location, Category, Area }) => {
                 // マーカーの処理
                 if (Coords) {
                     const [lat, lng] = Coords.split(",").map(Number);
                     const title = Title || "No Title";
                     const time = Time || "No Time";
+                    const items = Items || "No Items";
+                    const location = Location || "No Location";
                     const category = Category || "default";
 
                     const icon = categoryIcons[category] || categoryIcons["default"];
 
                     L.marker([lat, lng], { icon: icon })
                         .addTo(window.myMap)
-                        .bindPopup(`<b>${title}</b><br>Time: ${time}<br>Category: ${category}`);
+                        .bindPopup(`
+                            <b style="margin-bottom: 0px; display: block;">${location}</b>
+                            <br>${category}
+                            <br>Category: ${category}
+                            `);
+                            autoPan: false // ポップアップ表示時に地図を移動しない
                 }
 
                 // ポリゴンの処理
@@ -1158,8 +1165,14 @@
                             ${timeValue ? `<p class="timeandItems">${timeFormatted} - ${item['Items'] || ''}</p>` : ''}
                             ${item['Description'] ? `<p class="description">${item['Description']}</p>` : ''}
                             ${item['Location'] ? `<p class="location">Location: ${item['Location']}</p>` : ''}
-                            ${item['Google Map'] ? `<a class="googleMap" href="${item['Google Map']}" target="_blank"><i class="fa-solid fa-earth-americas"></i></a>` : ''}
-                            ${item['Link1'] ? `<a class="additional-link" href="${item['Link1']}" target="_blank">Link1</a>` : ''}
+                            ${item['Google Map'] ? `<a class="googleMap" href="${item['Google Map']}" target="_blank">
+                                                        <img src="https://img.icons8.com/?size=100&id=2m4kkop8aUO5&format=png&color=000000" 
+                                                         alt="Google Map Icon" style="width: 20px; height: 20px;">
+                                                    </a>` : ''}
+                            ${item['Link1'] ? `<a class="additional-link" href="${item['Link1']}" target="_blank">
+                                                        <img src="https://img.icons8.com/?size=100&id=OVMSsCK0bAsj&format=png&color=000000" 
+                                                         alt="Link1 icon" style="width: 20px; height: 20px;">
+                                                    </a>` : ''}
                             ${item['Link2'] ? `<a class="additional-link" href="${item['Link2']}" target="_blank">Link2</a>` : ''}
                             ${item['Link3'] ? `<a class="additional-link" href="${item['Link3']}" target="_blank">Link3</a>` : ''}
                         `;
