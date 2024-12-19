@@ -117,14 +117,19 @@
 
         #calendar th {
             font-weight: bold; /* 曜日ヘッダーを太字 */
-            color: var(--fg); /* テキスト色 */
+            transition:
+                background-color var(--trans-dur),
+                color var(--trans-dur);
         }
 
         #calendar td {
-            background-color: var(--bg); /* 背景色 */
-            color: grey; /* テキスト色 */
             text-align: center; /* テキストを中央揃え */
             vertical-align: middle; /* 垂直方向の中央揃え */
+            background-color: var(--bg); /* 背景色 */
+            color: grey; /* テキスト色 */
+            transition:
+                background-color var(--trans-dur),
+                color var(--trans-dur);          
         }
 
         #calendar td.highlight {
