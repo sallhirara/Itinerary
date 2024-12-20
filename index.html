@@ -446,6 +446,49 @@
         #map-close:hover {
             background: rgba(0, 0, 0, 0.1); /* ホバー時に軽く背景をつける */
         }
+      
+        #toggleWatchButton {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            z-index: 10000;
+            background: transparent; /* 背景を透明に */
+            padding: 1px;
+            border-radius: 50%; /* 円形に調整 */
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px; /* ボタンの幅 */
+            height: 40px; /* ボタンの高さ */
+        }
+
+        #toggleWatchButton img {
+            width: 100%; /* 画像をボタン内にフィット */
+            height: auto;
+            display: block;
+        }
+
+        #toggleWatchButton:hover {
+            background: rgba(0, 0, 0, 0.1); /* ホバー時に軽く背景をつける */
+        }  
+
+        .blinking-marker {
+            background-color: #004ACD99;
+            border-radius: 50%;
+            width: 10px;
+            height: 10px;
+            animation: blink 1.3s infinite;
+        }
+
+        @keyframes blink {
+            0%, 100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0;
+            }
+        }      
 
         #togglePositionButton {
             background: none;
@@ -487,7 +530,9 @@
             transform: scale(1.1);
         }      
       
-      
+
+
+     
       
         footer {
             position: sticky;
@@ -540,6 +585,12 @@
     </div>
 
     <div id="map">
+        <button id="toggleWatchButton" onclick="toggleWatchingPosition()">
+            <img src="https://img.icons8.com/?size=100&id=ziC1TV1ikKi9&format=png&color=000000" 
+                 alt="Start Watching" id="watchIcon" style="width: 30px; height: 30px;"/>
+        </button>
+
+
         <div id="map-close" onclick="mapping()">
             <img src="https://img.icons8.com/?size=100&id=N6MjBhBaEOTN&format=png&color=000000"/>
         </div>
@@ -799,6 +850,77 @@
             container.style.display = "block";
         }
 
+
+
+let watchId = null; // 現在のwatchPositionのIDを保存
+let isWatching = false; // 現在監視中かどうかを保持
+let currentPositionMarker = null; // 現在位置を示すマーカー
+
+function toggleWatchingPosition() {
+    const buttonIcon = document.getElementById("watchIcon");
+
+    if (!isWatching) {
+        // 現在位置の監視を開始
+        if (navigator.geolocation) {
+            watchId = navigator.geolocation.watchPosition(
+                (position) => {
+                    const { latitude, longitude } = position.coords;
+
+                    // 現在位置を更新
+                    updateCurrentPositionMarker(latitude, longitude);
+                },
+                (error) => {
+                    console.error("Error watching position:", error);
+                    alert("Error watching position:");
+                },
+                {
+                    enableHighAccuracy: true,
+                    maximumAge: 0,
+                    timeout: 10000
+                }
+            );
+
+            // アイコンを停止用に変更
+            buttonIcon.src = "https://img.icons8.com/?size=100&id=ziC1TV1ikKi9&format=png&color=004ACD99"; // 赤色の停止アイコン
+            isWatching = true;
+        } else {
+            alert("このブラウザでは現在位置取得機能がサポートされていません。");
+        }
+    } else {
+        // 現在位置の監視を停止
+        if (watchId !== null) {
+            navigator.geolocation.clearWatch(watchId);
+            watchId = null;
+        }
+
+        // マーカーを地図から削除
+        if (currentPositionMarker) {
+            window.myMap.removeLayer(currentPositionMarker);
+            currentPositionMarker = null; // マーカーの参照もクリア
+        }
+
+        // アイコンを開始用に戻す
+        buttonIcon.src = "https://img.icons8.com/?size=100&id=ziC1TV1ikKi9&format=png&color=004ACD63"; // 黒色の開始アイコン
+        isWatching = false;
+    }
+}
+
+function updateCurrentPositionMarker(lat, lng) {
+    // 既存のマーカーを削除
+    if (currentPositionMarker) {
+        window.myMap.removeLayer(currentPositionMarker);
+    }
+
+    // 新しいマーカーを作成
+    const blinkingIcon = L.divIcon({
+        className: 'blinking-marker',
+    });
+
+    currentPositionMarker = L.marker([lat, lng], { icon: blinkingIcon }).addTo(window.myMap);
+
+    // 地図の中心を更新
+    window.myMap.setView([lat, lng], window.myMap.getZoom());
+}
 
 
 
