@@ -131,6 +131,18 @@
                 background-color var(--trans-dur),
                 color var(--trans-dur);          
         }
+      
+        #calendar td.today {
+            border-radius: 30%;
+            background-color: var(--fg);
+            color: var(--bg);
+            font-weight: bold;
+            transition:
+                background-color var(--trans-dur),
+                color var(--trans-dur);          
+        }
+
+      
 
         #calendar td.highlight {
             border: 1px solid var(--fg); /* 枠線の色 */
@@ -743,6 +755,10 @@
             });
             table.appendChild(headerRow);
 
+            // 今日の日付を取得
+            const today = new Date();
+            today.setHours(0, 0, 0, 0); // 時間部分をリセット
+
             // 開始日と終了日を基にカレンダー範囲を計算
             const start = new Date(startDate);
             start.setDate(start.getDate() - start.getDay() - 7); // 開始日の前の週
@@ -755,6 +771,15 @@
                 for (let i = 0; i < 7; i++) {
                     const cell = document.createElement("td");
 
+                    // セルに日付を設定
+                    cell.textContent = currentDate.getDate();
+
+                    // 今日の日付なら新しいクラスを追加
+                    if (currentDate.toISOString().split("T")[0] === today.toISOString().split("T")[0]) {
+                        cell.classList.add("today");
+                    }
+
+                    // 他の日付を既存のHighlightで処理
                     if (
                         currentDate.toISOString().split("T")[0] >= startDate.toISOString().split("T")[0] &&
                         currentDate.toISOString().split("T")[0] <= endDate.toISOString().split("T")[0]
@@ -762,9 +787,6 @@
                         cell.classList.add("highlight");
                     }
 
-
-                    // セルに日付を設定
-                    cell.textContent = currentDate.getDate();
                     row.appendChild(cell);
 
                     // 日付を1日進める
@@ -776,6 +798,7 @@
             // カレンダーを表示
             container.style.display = "block";
         }
+
 
 
 
