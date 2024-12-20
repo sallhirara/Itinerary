@@ -1403,7 +1403,33 @@
                     });
 
 
-                    // Locationクリックイベントの委譲を設定
+                    let isMapVisible = false; // 地図の表示状態を管理
+
+                    // 地図を開閉するmapping関数の修正
+                    function mapping(forceOpen = false) {
+                        const mapContainer = document.getElementById("map");
+
+                        if (forceOpen) {
+                            // 強制的に地図を開く
+                            if (!mapContainer.classList.contains("show")) {
+                                mapContainer.style.display = "block";
+                                setTimeout(() => mapContainer.classList.add("show"), 10);
+                                isMapVisible = true; // 地図は表示中
+                            }
+                        } else if (mapContainer.classList.contains("show")) {
+                            // 地図を閉じる処理
+                            mapContainer.classList.remove("show");
+                            setTimeout(() => (mapContainer.style.display = "none"), 300);
+                            isMapVisible = false; // 地図は非表示
+                        } else {
+                            // 地図を開く処理
+                            mapContainer.style.display = "block";
+                            setTimeout(() => mapContainer.classList.add("show"), 10);
+                            isMapVisible = true; // 地図は表示中
+                        }
+                    }
+
+                    // `.location`クリックイベントの修正版
                     details.addEventListener('click', (event) => {
                         const link = event.target.closest('.location-link'); // クリックされた場所がリンクか確認
                         if (!link) return;
@@ -1412,18 +1438,31 @@
                         if (coords) {
                             const [lat, lng] = coords.split(',').map(Number);
 
-                            // 地図を開いて該当位置に移動
-                            mapping(); // 地図を開く（既存の関数を使用）
+                            // 地図を強制的に開く
+                            mapping(true); // 地図が閉じていても開く
+
+                            // 地図のビューを指定座標に移動
                             window.myMap.setView([lat, lng], 14);
 
-                            // マーカーのポップアップを開く
+                            // 地図サイズをリフレッシュ
+                            window.myMap.invalidateSize();
+
+                            // 該当するマーカーのポップアップを開く
+                            let markerFound = false;
                             window.myMap.eachLayer(layer => {
                                 if (layer instanceof L.Marker && layer.getLatLng().lat === lat && layer.getLatLng().lng === lng) {
                                     layer.openPopup();
+                                    markerFound = true;
                                 }
                             });
+
+                            // マーカーが見つからない場合の警告ログ（デバッグ用）
+                            if (!markerFound) {
+                                console.warn(`No marker found at coordinates: ${lat}, ${lng}`);
+                            }
                         }
-                    });                  
+                    });
+             
 
                     content.appendChild(details);
                     groupDiv.appendChild(content);
