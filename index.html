@@ -1003,12 +1003,24 @@
             "PJ Site": { fillColor: '#FF0062A8' },
             "default": { color: "gray", fillColor: "rgba(128, 128, 128, 0.3)" }
         };
+      
 
-        // マーカーとポリゴンを追加する関数
+
+
+        // マーカー管理用のレイヤーグループ
+        let markerLayerGroup;
+
         function addMarkersAndPolygonsToMap() {
             if (!window.markerData) return; // データがない場合は終了
 
-            window.markerData.forEach(({ Coords, Title, Time,Items, Location, Category, Area }) => {
+            // マーカーをクリア
+            if (!markerLayerGroup) {
+                markerLayerGroup = L.layerGroup().addTo(window.myMap); // 初期化
+            } else {
+                markerLayerGroup.clearLayers(); // 既存マーカーをクリア
+            }
+
+            window.markerData.forEach(({ Coords, Title, Time, Items, Location, Category, Area }) => {
                 // マーカーの処理
                 if (Coords) {
                     const [lat, lng] = Coords.split(",").map(Number);
@@ -1020,14 +1032,14 @@
 
                     const icon = categoryIcons[category] || categoryIcons["default"];
 
-                    L.marker([lat, lng], { icon: icon })
-                        .addTo(window.myMap)
+                    // マーカーを作成してレイヤーグループに追加
+                    const marker = L.marker([lat, lng], { icon: icon })
                         .bindPopup(`
                             <b style="margin-bottom: 0px; display: block;">${location}</b>
                             <br>${category}
                             <br>Category: ${category}
-                            `);
-                            autoPan: false // ポップアップ表示時に地図を移動しない
+                        `);
+                    markerLayerGroup.addLayer(marker); // レイヤーグループに追加
                 }
 
                 // ポリゴンの処理
@@ -1047,6 +1059,7 @@
                 }
             });
         }
+
 
         // Excelファイルからデータを読み取る
         document.getElementById("fileInput").addEventListener("change", (event) => {
@@ -1367,7 +1380,7 @@
                             ${item['Summary'] ? `<p class="summary">${item['Summary']}</p>` : ''}
                             ${timeValue ? `<p class="timeandItems">${timeFormatted} - ${item['Items'] || ''}</p>` : ''}
                             ${item['Description'] ? `<p class="description">${item['Description']}</p>` : ''}
-                            ${item['Location'] ? `<p class="location">Location: ${item['Location']}</p>` : ''}
+                            ${item['Location'] ? `<p class="location">Location: <a href="#" class="location-link" data-coords="${item['Coords']}">${item['Location']}</a></p>` : ''}
                             ${item['Google Map'] ? `<a class="googleMap" href="${item['Google Map']}" target="_blank">
                                                         <img src="https://img.icons8.com/?size=100&id=2m4kkop8aUO5&format=png&color=000000" 
                                                          alt="Google Map Icon" style="width: 20px; height: 20px;">
@@ -1388,6 +1401,29 @@
                         `;
                         details.appendChild(div);
                     });
+
+
+                    // Locationクリックイベントの委譲を設定
+                    details.addEventListener('click', (event) => {
+                        const link = event.target.closest('.location-link'); // クリックされた場所がリンクか確認
+                        if (!link) return;
+
+                        const coords = link.getAttribute('data-coords');
+                        if (coords) {
+                            const [lat, lng] = coords.split(',').map(Number);
+
+                            // 地図を開いて該当位置に移動
+                            mapping(); // 地図を開く（既存の関数を使用）
+                            window.myMap.setView([lat, lng], 14);
+
+                            // マーカーのポップアップを開く
+                            window.myMap.eachLayer(layer => {
+                                if (layer instanceof L.Marker && layer.getLatLng().lat === lat && layer.getLatLng().lng === lng) {
+                                    layer.openPopup();
+                                }
+                            });
+                        }
+                    });                  
 
                     content.appendChild(details);
                     groupDiv.appendChild(content);
