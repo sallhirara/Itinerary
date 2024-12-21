@@ -138,8 +138,8 @@
             color: var(--bg) !important;
             font-weight: bold !important;
             transition:
-                background-color var(--trans-dur) !important,
-                color var(--trans-dur) !important;          
+                background-color var(--trans-dur)
+                color var(--trans-dur);          
         }
 
       
@@ -1033,14 +1033,17 @@
                     const icon = categoryIcons[category] || categoryIcons["default"];
 
                     // マーカーを作成してレイヤーグループに追加
-                    const marker = L.marker([lat, lng], { icon: icon })
-                        .bindPopup(`
+                    const popup = L.popup({ offset: [0, -10] }) // 必要に応じて調整
+                        .setContent(`
                             <b style="margin-bottom: 0px; display: block;">${location}</b>
                             <br>${category}
                             <br>Category: ${category}
                         `);
-                    markerLayerGroup.addLayer(marker); // レイヤーグループに追加
-                }
+
+                    // マーカーにポップアップを設定
+                    const marker = L.marker([lat, lng], { icon: icon }).bindPopup(popup);
+                    markerLayerGroup.addLayer(marker);
+                                    }
 
                 // ポリゴンの処理
                 if (Area) {
@@ -1403,65 +1406,74 @@
                     });
 
 
-                    let isMapVisible = false; // 地図の表示状態を管理
+function mapping(forceOpen = false) {
+    const mapContainer = document.getElementById("map");
 
-                    // 地図を開閉するmapping関数の修正
-                    function mapping(forceOpen = false) {
-                        const mapContainer = document.getElementById("map");
+    if (forceOpen || !mapContainer.classList.contains("show")) {
+        mapContainer.style.display = "block";
+        setTimeout(() => {
+            mapContainer.classList.add("show");
 
-                        if (forceOpen) {
-                            // 強制的に地図を開く
-                            if (!mapContainer.classList.contains("show")) {
-                                mapContainer.style.display = "block";
-                                setTimeout(() => mapContainer.classList.add("show"), 10);
-                                isMapVisible = true; // 地図は表示中
-                            }
-                        } else if (mapContainer.classList.contains("show")) {
-                            // 地図を閉じる処理
-                            mapContainer.classList.remove("show");
-                            setTimeout(() => (mapContainer.style.display = "none"), 300);
-                            isMapVisible = false; // 地図は非表示
-                        } else {
-                            // 地図を開く処理
-                            mapContainer.style.display = "block";
-                            setTimeout(() => mapContainer.classList.add("show"), 10);
-                            isMapVisible = true; // 地図は表示中
-                        }
-                    }
+            // 地図を初期化またはリフレッシュ
+            if (!window.myMap) {
+                initializeMap();
+            }
 
-                    // `.location`クリックイベントの修正版
-                    details.addEventListener('click', (event) => {
-                        const link = event.target.closest('.location-link'); // クリックされた場所がリンクか確認
-                        if (!link) return;
+            // マーカーを追加
+            if (window.markerData) {
+                addMarkersAndPolygonsToMap();
+            }
 
-                        const coords = link.getAttribute('data-coords');
-                        if (coords) {
-                            const [lat, lng] = coords.split(',').map(Number);
+            // 地図サイズを更新
+            setTimeout(() => {
+                window.myMap.invalidateSize();
+            }, 300);
+        }, 10);
+    }
+}
 
-                            // 地図を強制的に開く
-                            mapping(true); // 地図が閉じていても開く
+function initializeMap() {
+    const mapTilerApiKey = "Sv80uSRLZxFEwRiW17Cg";
+    window.myMap = L.map("map-container", { zoomControl: false }).setView(mapCenter, zoomScale);
+    L.tileLayer(`https://api.maptiler.com/maps/basic/{z}/{x}/{y}.png?key=${mapTilerApiKey}`, {
+        attribution: '&copy; MapTiler &copy; OpenStreetMap contributors',
+    }).addTo(window.myMap);
+}
 
-                            // 地図のビューを指定座標に移動
-                            window.myMap.setView([lat, lng], 14);
+details.addEventListener('click', (event) => {
+    const link = event.target.closest(".location-link");
+    if (!link) return;
 
-                            // 地図サイズをリフレッシュ
-                            window.myMap.invalidateSize();
+    const coords = link.getAttribute("data-coords");
+    if (coords) {
+        const [lat, lng] = coords.split(",").map(Number);
 
-                            // 該当するマーカーのポップアップを開く
-                            let markerFound = false;
-                            window.myMap.eachLayer(layer => {
-                                if (layer instanceof L.Marker && layer.getLatLng().lat === lat && layer.getLatLng().lng === lng) {
-                                    layer.openPopup();
-                                    markerFound = true;
-                                }
-                            });
+        // 地図を初期化または表示
+        if (!window.myMap) {
+            mapping(true);
+        } else {
+            mapping(true);
+        }
 
-                            // マーカーが見つからない場合の警告ログ（デバッグ用）
-                            if (!markerFound) {
-                                console.warn(`No marker found at coordinates: ${lat}, ${lng}`);
-                            }
-                        }
-                    });
+        // 非同期的にポップアップを開き、中心を設定
+        setTimeout(() => {
+            let markerFound = false;
+
+            window.myMap.eachLayer((layer) => {
+                if (layer instanceof L.Marker && layer.getLatLng().lat === lat && layer.getLatLng().lng === lng) {
+                    // 地図を中心に移動してポップアップを開く
+                    window.myMap.setView([lat, lng], 14); // 中心を設定
+                    layer.openPopup(); // ポップアップを開く
+                    markerFound = true;
+                }
+            });
+
+            if (!markerFound) {
+                console.warn(`No marker found at coordinates: ${lat}, ${lng}`);
+            }
+        }, 500); // 地図が完全に描画される時間を待つ
+    }
+});
              
 
                     content.appendChild(details);
