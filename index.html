@@ -1033,7 +1033,7 @@
                     const icon = categoryIcons[category] || categoryIcons["default"];
 
                     // マーカーを作成してレイヤーグループに追加
-                    const popup = L.popup({ offset: [0, -10] }) // 必要に応じて調整
+                    const popup = L.popup({ offset: [0, -5] }) // 必要に応じて調整
                         .setContent(`
                             <b style="margin-bottom: 0px; display: block;">${location}</b>
                             <br>${category}
@@ -1043,7 +1043,7 @@
                     // マーカーにポップアップを設定
                     const marker = L.marker([lat, lng], { icon: icon }).bindPopup(popup);
                     markerLayerGroup.addLayer(marker);
-                                    }
+                }
 
                 // ポリゴンの処理
                 if (Area) {
