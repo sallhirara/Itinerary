@@ -1491,7 +1491,7 @@
                             ${item['Summary'] ? `<p class="summary">${item['Summary']}</p>` : ''}
                             ${timeValue ? `<p class="timeandItems">${timeFormatted} - ${item['Items'] || ''}</p>` : ''}
                             ${item['Description'] ? `<p class="description">${item['Description']}</p>` : ''}
-                            ${item['Location'] ? `<p class="location">Location: <a href="#" class="location-link" data-coords="${item['Coords']}">${item['Location']}</a></p>` : ''}
+                            ${item['Location'] ? `<p class="location">@ <a href="#" class="location-link" data-coords="${item['Coords']}">${item['Location']}</a></p>` : ''}
                             ${item['Google Map'] ? `<a class="googleMap" href="${item['Google Map']}" target="_blank">
                                                         <img src="https://img.icons8.com/?size=100&id=2m4kkop8aUO5&format=png&color=000000" 
                                                         alt="Google Map Icon" style="width: 20px; height: 20px;">
