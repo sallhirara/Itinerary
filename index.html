@@ -824,11 +824,16 @@
 
                     // セルに日付を設定
                     cell.textContent = currentDate.getDate();
-
-                    // 今日の日付なら新しいクラスを追加
-                    if (currentDate.toISOString().split("T")[0] === today.toISOString().split("T")[0]) {
+                    
+                    // ローカルタイムを基準に今日の日付を判定
+                    const isToday = (
+                        currentDate.getFullYear() === today.getFullYear() &&
+                        currentDate.getMonth() === today.getMonth() &&
+                        currentDate.getDate() === today.getDate()
+                    );
+                    if (isToday) {
                         cell.classList.add("today");
-                    }
+                    }   
 
                     // 他の日付を既存のHighlightで処理
                     if (
