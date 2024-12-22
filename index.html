@@ -789,7 +789,6 @@
             const offset = excelDate - 2; // Excelのシリアル値補正
             return new Date(baseDate.getTime() + offset * 24 * 60 * 60 * 1000);
         }
-
         function generateCalendar(startDate, endDate) {
             const container = document.getElementById("calendar-container");
             const table = document.getElementById("calendar");
@@ -808,13 +807,13 @@
 
             // 今日の日付を取得
             const today = new Date();
-            today.setHours(0, 0, 0, 0); // 時間部分をリセット
+            today.setHours(0, 0, 0, 0);
 
             // 開始日と終了日を基にカレンダー範囲を計算
             const start = new Date(startDate);
-            start.setDate(start.getDate() - start.getDay() - 7); // 開始日の前の週
+            start.setDate(start.getDate() - start.getDay() - 7);
             const end = new Date(endDate);
-            end.setDate(end.getDate() + (6 - end.getDay()) + 7); // 終了日の次の週
+            end.setDate(end.getDate() + (6 - end.getDay()) + 7);
 
             let currentDate = new Date(start);
             while (currentDate <= end) {
@@ -823,38 +822,83 @@
                     const cell = document.createElement("td");
 
                     // セルに日付を設定
+                    const formattedDate = currentDate.toISOString().split("T")[0];
                     cell.textContent = currentDate.getDate();
-                    
-                    // ローカルタイムを基準に今日の日付を判定
-                    const isToday = (
+                    cell.setAttribute("data-date", formattedDate);
+
+                    // 今日の日付の処理
+                    if (
                         currentDate.getFullYear() === today.getFullYear() &&
                         currentDate.getMonth() === today.getMonth() &&
                         currentDate.getDate() === today.getDate()
-                    );
-                    if (isToday) {
+                    ) {
                         cell.classList.add("today");
-                    }   
+                    }
 
-                    // 他の日付を既存のHighlightで処理
+                    // 開始日から終了日の範囲を強調
                     if (
-                        currentDate.toISOString().split("T")[0] >= startDate.toISOString().split("T")[0] &&
-                        currentDate.toISOString().split("T")[0] <= endDate.toISOString().split("T")[0]
+                        currentDate >= startDate &&
+                        currentDate <= endDate
                     ) {
                         cell.classList.add("highlight");
+
+                        // クリックイベントを追加
+                        cell.addEventListener("click", () => {
+                            const timelineItem = document.querySelector(`.timeline-item[data-date="${formattedDate}"]`);
+                            if (timelineItem) {
+                                const details = timelineItem.querySelector(".details");
+                                const toggle = timelineItem.querySelector(".toggle");
+
+                                // タイムラインセクションの開閉
+                                details.classList.toggle("expanded");
+                                toggle.classList.toggle("collapsed");
+
+                                // DOM変更後に正確な線の長さを計算
+                                setTimeout(() => {
+                                    adjustTimelineLineHeight(true);
+                                }, 100);
+
+                                // スムーズにスクロール
+                                timelineItem.scrollIntoView({
+                                    behavior: "smooth",
+                                    block: "start",
+                                });
+                            }
+                        });
                     }
 
                     row.appendChild(cell);
-
-                    // 日付を1日進める
                     currentDate.setDate(currentDate.getDate() + 1);
                 }
                 table.appendChild(row);
             }
 
-            // カレンダーを表示
             container.style.display = "block";
         }
 
+
+        function scrollToTimelineSection(date) {
+            const timelineSection = document.querySelector(`.timeline-item[data-date="${date}"]`);
+
+            if (timelineSection) {
+                const details = timelineSection.querySelector(".details");
+                const toggle = timelineSection.querySelector(".toggle");
+
+                // セクションを展開
+                if (details && !details.classList.contains("expanded")) {
+                    details.classList.add("expanded");
+                    toggle.classList.remove("collapsed");
+                }
+
+                // スムーズにスクロール
+                timelineSection.scrollIntoView({
+                    behavior: "smooth",
+                    block: "start",
+                });
+            } else {
+                console.warn(`Timeline section for date ${date} not found.`);
+            }
+        }
 
         // Add Current Location
         let watchId = null; // 現在のwatchPositionのIDを保存
@@ -1266,13 +1310,16 @@
             const firstDot = dots[0];
             const lastDot = dots[dots.length - 1];
 
+            // タイムライン全体と各dotの位置を取得
             const timelineRect = timeline.getBoundingClientRect();
             const firstDotRect = firstDot.getBoundingClientRect();
             const lastDotRect = lastDot.getBoundingClientRect();
 
+            // 線の開始位置と長さを計算
             const lineTop = firstDotRect.top - timelineRect.top + firstDotRect.height / 2;
             const lineHeight = lastDotRect.top - firstDotRect.top;
 
+            // CSSカスタムプロパティを設定
             timeline.style.setProperty('--timeline-line-top', `${lineTop}px`);
             timeline.style.setProperty('--timeline-line-height', `${lineHeight}px`);
         }
@@ -1396,6 +1443,11 @@
                 Object.keys(groupedData).forEach(date => {
                     const groupDiv = document.createElement('div');
                     groupDiv.classList.add('timeline-item');
+                    
+                    // タイムラインセクションに data-date 属性を追加
+                    const dateObject = isNaN(date) ? new Date(date) : convertExcelDate(date);
+                    const formattedDate = dateObject.toISOString().split("T")[0]; // ISO形式の日付
+                    groupDiv.setAttribute('data-date', formattedDate);
 
                     const toggle = document.createElement('div');
                     toggle.classList.add('toggle', 'collapsed'); // Initially collapsed
@@ -1403,6 +1455,9 @@
                     toggle.addEventListener('click', () => {
                         details.classList.toggle('expanded');
                         toggle.classList.toggle('collapsed');
+
+                        // 線の長さを調整
+                        adjustTimelineLineHeight();
                     });
                     groupDiv.appendChild(toggle);
 
@@ -1417,7 +1472,6 @@
                     dateElement.classList.add('date');
 
                     // 日付がシリアル値の場合に変換
-                    const dateObject = isNaN(date) ? new Date(date) : convertExcelDate(date);
                     dateElement.textContent = formatDate(dateObject); // フォーマット後の日付を設定
                     content.appendChild(dateElement);
 
@@ -1440,20 +1494,19 @@
                             ${item['Location'] ? `<p class="location">Location: <a href="#" class="location-link" data-coords="${item['Coords']}">${item['Location']}</a></p>` : ''}
                             ${item['Google Map'] ? `<a class="googleMap" href="${item['Google Map']}" target="_blank">
                                                         <img src="https://img.icons8.com/?size=100&id=2m4kkop8aUO5&format=png&color=000000" 
-                                                         alt="Google Map Icon" style="width: 20px; height: 20px;">
+                                                        alt="Google Map Icon" style="width: 20px; height: 20px;">
                                                     </a>` : ''}
                             ${item['Link1'] ? `<a class="additional-link" href="${item['Link1']}" target="_blank">
                                                         <img src="https://img.icons8.com/?size=100&id=OVMSsCK0bAsj&format=png&color=000000" 
-                                                         alt="Link1 icon" style="width: 20px; height: 20px;">
+                                                        alt="Link1 icon" style="width: 20px; height: 20px;">
                                                     </a>` : ''}
                             ${item['Link2'] ? `<a class="additional-link" href="${item['Link2']}" target="_blank">
                                                         <img src="https://img.icons8.com/?size=100&id=OVMSsCK0bAsj&format=png&color=000000" 
-                                                         alt="Link2 icon" style="width: 20px; height: 20px;">
+                                                        alt="Link2 icon" style="width: 20px; height: 20px;">
                                                     </a>` : ''}
-                            
                             ${item['Link3'] ? `<a class="additional-link" href="${item['Link3']}" target="_blank">
                                                         <img src="https://img.icons8.com/?size=100&id=OVMSsCK0bAsj&format=png&color=000000" 
-                                                         alt="Link3 icon" style="width: 20px; height: 20px;">
+                                                        alt="Link3 icon" style="width: 20px; height: 20px;">
                                                     </a>` : ''}
                         `;
                         details.appendChild(div);
@@ -1462,11 +1515,10 @@
                     content.appendChild(details);
                     groupDiv.appendChild(content);
                     timeline.appendChild(groupDiv);
-                });          
+                });
                 // タイムラインが構築された後に高さを再計算
                 onFileLoaded();                              
             };
-
             reader.readAsArrayBuffer(file);
         });
 
@@ -1544,6 +1596,8 @@
         details.addEventListener('click', (event) => {
             const link = event.target.closest('.location-link'); // クリックされた場所がリンクか確認
             if (!link) return;
+
+            event.stopPropagation(); // イベントの伝播を停止            
 
             const coords = link.getAttribute('data-coords');
             if (coords) {
