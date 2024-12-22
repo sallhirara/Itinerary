@@ -1407,6 +1407,20 @@
             return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`; // "00:00"形式で返す
         }
 
+        function isValidCoords(coords) {
+    if (!coords || typeof coords !== 'string') return false;
+
+    const parts = coords.split(',').map(Number);
+    if (parts.length !== 2) return false;
+
+    const [lat, lng] = parts;
+    return (
+        !isNaN(lat) && !isNaN(lng) &&
+        lat >= -90 && lat <= 90 &&
+        lng >= -180 && lng <= 180
+    );
+}        
+
         document.getElementById('fileInput').addEventListener('change', (event) => {
             const file = event.target.files[0];
             if (file) {
@@ -1491,7 +1505,11 @@
                             ${item['Summary'] ? `<p class="summary">${item['Summary']}</p>` : ''}
                             ${timeValue ? `<p class="timeandItems">${timeFormatted} - ${item['Items'] || ''}</p>` : ''}
                             ${item['Description'] ? `<p class="description">${item['Description']}</p>` : ''}
-                            ${item['Location'] ? `<p class="location">@ <a href="#" class="location-link" data-coords="${item['Coords']}">${item['Location']}</a></p>` : ''}
+                            ${item['Location'] 
+                                ? `<p class="location">@ ${item['Coords'] && isValidCoords(item['Coords']) 
+                                    ? `<a href="#" class="location-link" data-coords="${item['Coords']}">${item['Location']}</a>` 
+                                    : item['Location']}</p>` 
+                                : ''}
                             ${item['Google Map'] ? `<a class="googleMap" href="${item['Google Map']}" target="_blank">
                                                         <img src="https://img.icons8.com/?size=100&id=2m4kkop8aUO5&format=png&color=000000" 
                                                         alt="Google Map Icon" style="width: 20px; height: 20px;">
