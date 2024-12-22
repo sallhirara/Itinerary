@@ -138,7 +138,7 @@
             color: var(--bg) !important;
             font-weight: bold !important;
             transition:
-                background-color var(--trans-dur)
+                background-color var(--trans-dur),
                 color var(--trans-dur);          
         }
 
@@ -474,7 +474,7 @@
         }  
 
         .blinking-marker {
-            background-color: #0441BBA6;
+            background-color: #004ACD99;
             border-radius: 50%;
             width: 10px;
             height: 10px;
@@ -825,15 +825,10 @@
                     // セルに日付を設定
                     cell.textContent = currentDate.getDate();
 
-                    // ローカルタイムを基準に今日の日付を判定
-                    const isToday = (
-                        currentDate.getFullYear() === today.getFullYear() &&
-                        currentDate.getMonth() === today.getMonth() &&
-                        currentDate.getDate() === today.getDate()
-                    );
-                    if (isToday) {
+                    // 今日の日付なら新しいクラスを追加
+                    if (currentDate.toISOString().split("T")[0] === today.toISOString().split("T")[0]) {
                         cell.classList.add("today");
-                    }                  
+                    }
 
                     // 他の日付を既存のHighlightで処理
                     if (
@@ -886,7 +881,7 @@
                     );
 
                     // アイコンを停止用に変更
-                    buttonIcon.src = "https://img.icons8.com/?size=100&id=ziC1TV1ikKi9&format=png&color=0441BBBD";
+                    buttonIcon.src = "https://img.icons8.com/?size=100&id=ziC1TV1ikKi9&format=png&color=004ACD99"; // 赤色の停止アイコン
                     isWatching = true;
                 } else {
                     alert("このブラウザでは現在位置取得機能がサポートされていません。");
@@ -905,7 +900,7 @@
                 }
 
                 // アイコンを開始用に戻す
-                buttonIcon.src = "https://img.icons8.com/?size=100&id=ziC1TV1ikKi9&format=png&color=004ACD4D"; // 黒色の開始アイコン
+                buttonIcon.src = "https://img.icons8.com/?size=100&id=ziC1TV1ikKi9&format=png&color=004ACD63"; // 黒色の開始アイコン
                 isWatching = false;
             }
         }
@@ -1003,71 +998,126 @@
             "PJ Site": { fillColor: '#FF0062A8' },
             "default": { color: "gray", fillColor: "rgba(128, 128, 128, 0.3)" }
         };
-      
 
+        let markers = []; // 現在のマーカーを格納する配列
+        let polygons = []; // 現在のポリゴンを格納する配列
 
+        // マーカーとポリゴンをクリアする関数
+        function clearMarkersAndPolygons() {
+            markers.forEach(marker => {
+                if (window.myMap.hasLayer(marker)) {
+                    window.myMap.removeLayer(marker); // 地図からマーカーを削除
+                }
+            });
+            polygons.forEach(polygon => {
+                if (window.myMap.hasLayer(polygon)) {
+                    window.myMap.removeLayer(polygon); // 地図からポリゴンを削除
+                }
+            });
+            markers = []; // マーカー配列をリセット
+            polygons = []; // ポリゴン配列をリセット
+        }
 
-        // マーカー管理用のレイヤーグループ
-        let markerLayerGroup;
-
+        // マーカーとポリゴンを追加する関数
         function addMarkersAndPolygonsToMap() {
-            if (!window.markerData) return; // データがない場合は終了
-
-            // マーカーをクリア
-            if (!markerLayerGroup) {
-                markerLayerGroup = L.layerGroup().addTo(window.myMap); // 初期化
-            } else {
-                markerLayerGroup.clearLayers(); // 既存マーカーをクリア
+            if (!window.markerData) {
+                console.error("No marker data available."); // エラーメッセージを出力
+                return; // データがない場合は終了
             }
 
+            // 既存のマーカーとポリゴンをクリア
+            clearMarkersAndPolygons();
+
+            // マーカーとポリゴンをデータから生成
             window.markerData.forEach(({ Coords, Title, Time, Items, Location, Category, Area }) => {
                 // マーカーの処理
                 if (Coords) {
-                    const [lat, lng] = Coords.split(",").map(Number);
-                    const title = Title || "No Title";
-                    const time = Time || "No Time";
-                    const items = Items || "No Items";
-                    const location = Location || "No Location";
-                    const category = Category || "default";
+                    const coordsArray = Coords.split(",");
+                    const lat = parseFloat(coordsArray[0]); // 緯度
+                    const lng = parseFloat(coordsArray[1]); // 経度
 
+                    const title = Title || "No Title"; // タイトルがない場合はデフォルト値
+                    const time = Time || "No Time"; // 時間がない場合はデフォルト値
+                    const items = Items || "No Items"; // アイテムがない場合はデフォルト値
+                    const location = Location || "No Location"; // 場所がない場合はデフォルト値
+                    const category = Category || "default"; // カテゴリがない場合はデフォルト値
+
+                    // カテゴリに応じたアイコンを取得
                     const icon = categoryIcons[category] || categoryIcons["default"];
 
-                    // マーカーを作成してレイヤーグループに追加
-                    const popup = L.popup({ offset: [0, -5] }) // 必要に応じて調整
-                        .setContent(`
-                            <b style="margin-bottom: 0px; display: block;">${location}</b>
-                            <br>${category}
-                            <br>Category: ${category}
-                        `);
+                    // マーカーを作成
+                    const marker = L.marker([lat, lng], { icon: icon });
+                    marker.addTo(window.myMap); // 地図に追加
 
-                    // マーカーにポップアップを設定
-                    const marker = L.marker([lat, lng], { icon: icon }).bindPopup(popup);
-                    markerLayerGroup.addLayer(marker);
+                    // マーカーにポップアップをバインド
+                    const popupContent = `
+                        <b style="margin-bottom: 0px; display: block;">${location}</b>
+                        <br>${category}
+                        <br>Category: ${category}
+                    `;
+                    marker.bindPopup(popupContent, { offset: [0, -5] });
+
+                    // マーカーのクリックイベントを追加
+                    marker.on("click", function (e) {
+                        console.log("Marker clicked at:", e.latlng); // 確認用ログ
+                        if (window.myMap) {
+                            window.myMap.flyTo([e.latlng.lat, e.latlng.lng], window.myMap.getZoom(), {
+                                animate: true,
+                                duration: 1 // アニメーションの持続時間
+                            });
+                            marker.openPopup(); // ポップアップを開く
+                        } else {
+                            console.error("Map instance not found!");
+                        }
+                    });
+
+                    markers.push(marker); // マーカーを配列に追加
                 }
 
                 // ポリゴンの処理
                 if (Area) {
                     try {
-                        const polygonCoords = JSON.parse(Area); // JSON形式の座標を解析
+                        // AreaがJSON形式であることを確認してパース
+                        const polygonCoords = JSON.parse(Area);
                         const { color, fillColor } = categoryColors[Category] || categoryColors["default"];
 
-                        L.polygon(polygonCoords, {
+                        // ポリゴンを作成
+                        const polygon = L.polygon(polygonCoords, {
                             color: color,
                             fillColor: fillColor,
-                            weight: 2,
-                        }).addTo(window.myMap).bindPopup(`<b>${Category} Area</b>`);
+                            weight: 2 // ポリゴンの線の太さ
+                        });
+                        polygon.addTo(window.myMap); // 地図に追加
+
+                        // ポリゴンにポップアップをバインド
+                        polygon.bindPopup(`<b>${Category} Area</b>`, { offset: [0, -5] });
+
+                        // ポリゴンのクリックイベントを追加
+                        polygon.on("click", function (e) {
+                            if (window.myMap) {
+                                window.myMap.setView([e.latlng.lat, e.latlng.lng], window.myMap.getZoom(), {
+                                    animate: true,
+                                    duration: 1
+                                });
+                                polygon.openPopup(); // ポップアップを開く
+                            }
+                        });
+
+                        polygons.push(polygon); // ポリゴンを配列に追加
                     } catch (error) {
-                        console.error("Invalid Area format:", Area, error);
+                        console.error("Invalid Area format:", Area, error); // エラーメッセージを出力
                     }
                 }
             });
         }
 
-
-        // Excelファイルからデータを読み取る
+        // ファイルが読み込まれたときにマーカーとポリゴンを追加
         document.getElementById("fileInput").addEventListener("change", (event) => {
             const file = event.target.files[0];
-            if (!file) return;
+            if (!file) {
+                console.error("No file selected."); // ファイルが選択されていない場合
+                return;
+            }
 
             const reader = new FileReader();
             reader.onload = (e) => {
@@ -1083,9 +1133,8 @@
                     addMarkersAndPolygonsToMap();
                 }
             };
-          
-          
-            reader.readAsArrayBuffer(file);
+
+            reader.readAsArrayBuffer(file); // ファイルをArrayBufferとして読み込む
         });
                 
 
@@ -1405,77 +1454,6 @@
                         details.appendChild(div);
                     });
 
-
-function mapping(forceOpen = false) {
-    const mapContainer = document.getElementById("map");
-
-    if (forceOpen || !mapContainer.classList.contains("show")) {
-        mapContainer.style.display = "block";
-        setTimeout(() => {
-            mapContainer.classList.add("show");
-
-            // 地図を初期化またはリフレッシュ
-            if (!window.myMap) {
-                initializeMap();
-            }
-
-            // マーカーを追加
-            if (window.markerData) {
-                addMarkersAndPolygonsToMap();
-            }
-
-            // 地図サイズを更新
-            setTimeout(() => {
-                window.myMap.invalidateSize();
-            }, 300);
-        }, 10);
-    }
-}
-
-function initializeMap() {
-    const mapTilerApiKey = "Sv80uSRLZxFEwRiW17Cg";
-    window.myMap = L.map("map-container", { zoomControl: false }).setView(mapCenter, zoomScale);
-    L.tileLayer(`https://api.maptiler.com/maps/basic/{z}/{x}/{y}.png?key=${mapTilerApiKey}`, {
-        attribution: '&copy; MapTiler &copy; OpenStreetMap contributors',
-    }).addTo(window.myMap);
-}
-
-details.addEventListener('click', (event) => {
-    const link = event.target.closest(".location-link");
-    if (!link) return;
-
-    const coords = link.getAttribute("data-coords");
-    if (coords) {
-        const [lat, lng] = coords.split(",").map(Number);
-
-        // 地図を初期化または表示
-        if (!window.myMap) {
-            mapping(true);
-        } else {
-            mapping(true);
-        }
-
-        // 非同期的にポップアップを開き、中心を設定
-        setTimeout(() => {
-            let markerFound = false;
-
-            window.myMap.eachLayer((layer) => {
-                if (layer instanceof L.Marker && layer.getLatLng().lat === lat && layer.getLatLng().lng === lng) {
-                    // 地図を中心に移動してポップアップを開く
-                    window.myMap.setView([lat, lng], 14); // 中心を設定
-                    layer.openPopup(); // ポップアップを開く
-                    markerFound = true;
-                }
-            });
-
-            if (!markerFound) {
-                console.warn(`No marker found at coordinates: ${lat}, ${lng}`);
-            }
-        }, 500); // 地図が完全に描画される時間を待つ
-    }
-});
-             
-
                     content.appendChild(details);
                     groupDiv.appendChild(content);
                     timeline.appendChild(groupDiv);
@@ -1488,8 +1466,76 @@ details.addEventListener('click', (event) => {
 
             reader.readAsArrayBuffer(file);
         });
-      
-      
+        
+        document.getElementById("timeline").addEventListener("click", (event) => {
+            const link = event.target.closest('.location-link'); // クリックされた要素が`.location-link`か確認
+            if (!link) return; // クリックされた場所がリンクでない場合は終了
+
+            const coords = link.getAttribute('data-coords');
+            if (coords) {
+                const [lat, lng] = coords.split(',').map(Number);
+
+                // 地図が閉じている場合は開く
+                const mapContainer = document.getElementById("map");
+                if (!mapContainer.classList.contains("show")) {
+                    mapping(); // 地図を開く
+                }
+
+                // 地図のサイズを再計算（必須）
+                setTimeout(() => {
+                    if (window.myMap) {
+                        window.myMap.invalidateSize(); // サイズを再計算
+
+                        // 地図の中心を移動
+                        window.myMap.flyTo([lat, lng], 14, {
+                            animate: true,
+                            duration: 1.0, // アニメーションの持続時間を2秒に設定
+                            easeLinearity: 0.3, // 滑らかさを調整
+                        });
+
+                        // マーカーのポップアップを探して開く
+                        let markerFound = false;
+                        window.myMap.eachLayer((layer) => {
+                            if (layer instanceof L.Marker && layer.getLatLng().lat === lat && layer.getLatLng().lng === lng) {
+                                layer.openPopup(); // ポップアップを開く
+                                markerFound = true;
+                            }
+                        });
+
+                        // マーカーが見つからなかった場合
+                        if (!markerFound) {
+                            console.warn(`No marker found at coordinates: ${lat}, ${lng}`);
+                        }
+                    } else {
+                        console.error("Map instance is not initialized.");
+                    }
+                }, 500); // 地図を開いてから500ms待つ（アニメーションに合わせる）
+            } else {
+                console.warn("No coordinates found in the clicked link.");
+            }
+        });     
+                
+        // Locationクリックイベントの委譲を設定
+        details.addEventListener('click', (event) => {
+            const link = event.target.closest('.location-link'); // クリックされた場所がリンクか確認
+            if (!link) return;
+
+            const coords = link.getAttribute('data-coords');
+            if (coords) {
+                const [lat, lng] = coords.split(',').map(Number);
+
+                // 地図を開いて該当位置に移動
+                mapping(); // 地図を開く（既存の関数を使用）
+                window.myMap.setView([lat, lng], 14);
+
+                // マーカーのポップアップを開く
+                window.myMap.eachLayer(layer => {
+                    if (layer instanceof L.Marker && layer.getLatLng().lat === lat && layer.getLatLng().lng === lng) {
+                        layer.openPopup();
+                    }
+                });
+            }
+        });      
       
       
         // テーマ切り替え関数
@@ -1523,6 +1569,7 @@ details.addEventListener('click', (event) => {
 		window.addEventListener("orientationchange", handleOrientationChange);
 		window.addEventListener("resize", handleOrientationChange);
 		handleOrientationChange();
+
 
 
     </script>
