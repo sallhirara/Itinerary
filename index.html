@@ -1195,38 +1195,55 @@
         // 地図を初期化する `mapping` 関数内で、マーカーとポリゴンを追加
         let isMapVisible = false; // 地図の表示状態を管理
 
+
+
+
+
+        // デバイスの種類を判定
+        function getDeviceType() {
+            const userAgent = navigator.userAgent;
+
+            if (/iPad|Macintosh/i.test(userAgent) && 'ontouchend' in document) {
+                return "tablet"; // iPadをタブレットとして判定
+            } else if (/Mobi|Android/i.test(userAgent)) {
+                return "mobile";
+            }
+            return "desktop";
+        }
+
+        // 地図のズームレベルをデバイスに応じて変更
+        function getZoomLevel() {
+            const deviceType = getDeviceType();
+            if (deviceType === "mobile") {
+                return 14; // モバイルのズームレベル
+            } else if (deviceType === "tablet") {
+                return 13; // タブレット(iPad)のズームレベル
+            }
+            return 12; // デスクトップのズームレベル
+        }
+
+        // mapping 関数内の修正部分
         function mapping() {
             const mapContainer = document.getElementById("map");
 
-            if (isMapVisible) {
+            if (mapContainer.classList.contains("show")) {
                 mapContainer.classList.remove("show");
-                setTimeout(() => {
-                    mapContainer.style.display = "none";
-                    isMapVisible = false;
-                }, 300);
-            } else {
-                mapContainer.style.display = "block";
-                setTimeout(() => {
-                    mapContainer.classList.add("show");
-                    isMapVisible = true;
-                }, 10);
-
-                // 地図のサイズ再計算を確実に実行
-                setTimeout(() => {
-                    if (window.myMap) window.myMap.invalidateSize();
-                }, 300); // 適切な遅延
+                setTimeout(() => (mapContainer.style.display = "none"), 300);
+                return;
             }
 
+            mapContainer.style.display = "block";
+            setTimeout(() => mapContainer.classList.add("show"), 10);
 
             if (window.myMap) {
-                window.myMap.setView(mapCenter, zoomScale);
+                window.myMap.setView(mapCenter, getZoomLevel());
                 addMarkersAndPolygonsToMap();
                 return;
             }
 
             const mapTilerApiKey = "Sv80uSRLZxFEwRiW17Cg";
 
-            window.myMap = L.map("map-container", { zoomControl: false }).setView(mapCenter, zoomScale);
+            window.myMap = L.map("map-container", { zoomControl: false }).setView(mapCenter, getZoomLevel());
 
             window.myMap.invalidateSize();
 
@@ -1239,6 +1256,7 @@
             }).addTo(window.myMap);
 
             addMarkersAndPolygonsToMap();
+
 
 
 
