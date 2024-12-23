@@ -1203,7 +1203,12 @@
             }
 
             mapContainer.style.display = "block";
-            setTimeout(() => mapContainer.classList.add("show"), 10);
+            setTimeout(() => {
+                mapContainer.classList.add("show");
+                if (window.myMap) {
+                    window.myMap.invalidateSize(); // サイズ再計算
+                }
+            }, 10);
 
             if (window.myMap) {
                 window.myMap.setView(mapCenter, zoomScale);
