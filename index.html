@@ -1208,7 +1208,7 @@
             setTimeout(() => {
                 mapContainer.classList.add("show");
                 if (window.myMap) {
-                    setTimeout(() => window.myMap.invalidateSize(), 300); // トランジション完了後に再描画
+                    window.myMap.invalidateSize(); // サイズ再計算
                 }
             }, 10);
 
