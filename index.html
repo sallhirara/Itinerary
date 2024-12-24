@@ -1198,19 +1198,19 @@
         function mapping() {
             const mapContainer = document.getElementById("map");
 
-        if (mapContainer.classList.contains("show")) {
-            mapContainer.classList.remove("show");
-            setTimeout(() => (mapContainer.style.display = "none"), 300);
-            return;
-        }
-
-        mapContainer.style.display = "block";
-        setTimeout(() => {
-            mapContainer.classList.add("show");
-            if (window.myMap) {
-                window.myMap.invalidateSize(); // サイズ再計算
+            if (mapContainer.classList.contains("show")) {
+                mapContainer.classList.remove("show");
+                setTimeout(() => (mapContainer.style.display = "none"), 300);
+                return;
             }
-        }, 10);
+
+            mapContainer.style.display = "block";
+            setTimeout(() => {
+                mapContainer.classList.add("show");
+                if (window.myMap) {
+                    setTimeout(() => window.myMap.invalidateSize(), 300); // トランジション完了後に再描画
+                }
+            }, 10);
 
 
 
