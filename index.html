@@ -1193,30 +1193,17 @@
         let zoomScale = 12; // デフォルトのズームスケール
 
         // 地図を初期化する `mapping` 関数内で、マーカーとポリゴンを追加
-        let isMapVisible = false; // 地図の表示状態を管理
-
         function mapping() {
             const mapContainer = document.getElementById("map");
 
             if (mapContainer.classList.contains("show")) {
                 mapContainer.classList.remove("show");
                 setTimeout(() => (mapContainer.style.display = "none"), 300);
-            } else {
-                mapContainer.style.display = "block";
-                setTimeout(() => {
-                    mapContainer.classList.add("show");
-                    requestAnimationFra
-
-                    me(() => {
-                        if (window.myMap) {
-                            window.myMap.invalidateSize(); // 正確なタイミングでサイズ再計算
-                        }
-                    });
-                }, 10);
+                return;
             }
 
-
-
+            mapContainer.style.display = "block";
+            setTimeout(() => mapContainer.classList.add("show"), 10);
 
             if (window.myMap) {
                 window.myMap.setView(mapCenter, zoomScale);
