@@ -1195,31 +1195,27 @@
         // 地図を初期化する `mapping` 関数内で、マーカーとポリゴンを追加
         let isMapVisible = false; // 地図の表示状態を管理
 
-function mapping() {
-    const mapContainer = document.getElementById("map");
+        function mapping() {
+            const mapContainer = document.getElementById("map");
 
-    if (mapContainer.classList.contains("show")) {
-        mapContainer.classList.remove("show");
-        setTimeout(() => {
-            mapContainer.style.display = "none";
-        }, 300); // アニメーション終了後に非表示
-    } else {
-        mapContainer.style.display = "block";
-        setTimeout(() => {
-            mapContainer.classList.add("show");
+            if (mapContainer.classList.contains("show")) {
+                mapContainer.classList.remove("show");
+                setTimeout(() => (mapContainer.style.display = "none"), 300);
+            } else {
+                mapContainer.style.display = "block";
+                setTimeout(() => {
+                    mapContainer.classList.add("show");
+                    requestAnimationFra
 
-            // アニメーション終了後に地図のサイズを再計算
-            mapContainer.addEventListener(
-                "transitionend",
-                () => {
-                    if (window.myMap) {
-                        window.myMap.invalidateSize();
-                    }
-                },
-                { once: true } // 一度だけ実行
-            );
-        }, 10);
-    }
+                    me(() => {
+                        if (window.myMap) {
+                            window.myMap.invalidateSize(); // 正確なタイミングでサイズ再計算
+                        }
+                    });
+                }, 10);
+            }
+
+
 
 
             if (window.myMap) {
