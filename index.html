@@ -270,8 +270,9 @@
         .timeline-item .content .details .description,
         .timeline-item .content .details .location,
         .timeline-item .content .details .address,
-        .timeline-item .content .details .googleMap {
-            margin-left: 45px; /* Description の余白 */
+        .timeline-item .content .details .googleMap,
+        .timeline-item .content .details .additional-link {
+            margin-left: 45px; /* Description の余白*/
         }
 
         .timeline-item .content .details .googleMap,
@@ -1517,7 +1518,7 @@
                         div.innerHTML = `
                             ${item['Summary'] ? `<p class="summary">${item['Summary']}</p>` : ''}
                             ${timeValue ? `<p class="timeandItems">${timeFormatted} - ${item['Items'] || ''}</p>` : ''}
-                            ${item['Description'] ? `<p class="description">${item['Description']}</p>` : ''}
+                            ${item['Description'] ? `<p class="description">${item['Description']}</p>` : ''}     
                             ${item['Location'] 
                                 ? `<p class="location">@ ${item['Coords'] && isValidCoords(item['Coords']) 
                                     ? `<a href="#" class="location-link" data-coords="${item['Coords']}">${item['Location']}</a>` 
@@ -1528,6 +1529,22 @@
                                                         <img src="https://img.icons8.com/?size=100&id=2m4kkop8aUO5&format=png&color=000000" 
                                                         alt="Google Map Icon" style="width: 20px; height: 20px;">
                                                     </a>` : ''}
+                            ${item['Ticket'] ? `<a class="additional-link" href="${item['Ticket']}" target="_blank">
+                                                        <img src="https://img.icons8.com/?size=100&id=g22cQyIpiRcr&format=png&color=000000" 
+                                                        alt="Link1 icon" style="width: 20px; height: 20px;">
+                                                    </a>` : ''}
+                            ${item['Air Ticket'] ? `<a class="additional-link" href="${item['Air Ticket']}" target="_blank">
+                                                        <img src="https://img.icons8.com/?size=100&id=ktlE3m1GrQol&format=png&color=000000" 
+                                                        alt="Link1 icon" style="width: 20px; height: 20px;">
+                                                    </a>` : ''}                                                        
+                            ${item['Passport'] ? `<a class="additional-link" href="${item['Passport']}" target="_blank">
+                                                        <img src="https://img.icons8.com/?size=100&id=Wc5xMeFEO9Qk&format=png&color=000000" 
+                                                        alt="Link1 icon" style="width: 20px; height: 20px;">
+                                                    </a>` : ''}
+                            ${item['Visa'] ? `<a class="additional-link" href="${item['Visa']}" target="_blank">
+                                                        <img src="https://img.icons8.com/?size=100&id=ISaHzsnVzSEF&format=png&color=000000" 
+                                                        alt="Link1 icon" style="width: 20px; height: 20px;">
+                                                    </a>` : ''}                                                     
                             ${item['Link1'] ? `<a class="additional-link" href="${item['Link1']}" target="_blank">
                                                         <img src="https://img.icons8.com/?size=100&id=OVMSsCK0bAsj&format=png&color=000000" 
                                                         alt="Link1 icon" style="width: 20px; height: 20px;">
